@@ -1,12 +1,3 @@
-
-### Module Progurad Rules starts ###
-
-## Default ##
--keep class com.unity3d.plugin.* { *; }
-
-## LocationModule ##
--keep class com.google.android.gms.common.** { *; }
-                    -keep class com.google.android.gms.location.** { *; }
-                    -keep class com.google.android.gms.tasks.** { *; }
-
-### Module Progurad Rules ends ###
+-keep public class com.deadmosquitogames.gmaps.** { *; }
+-keep public class com.google.android.gms.maps.** { *; }
+-keep public class com.google.maps.** { *; }

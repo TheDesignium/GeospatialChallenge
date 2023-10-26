@@ -1457,5 +1457,30 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
             return string.Format(
                     "Failed to set a {0} anchor!", _anchorType);
         }
+
+        public List<string> returnLatLon()
+        {
+            List<string> list = new List<string>();
+            var pose = EarthManager.CameraGeospatialPose;
+            list.Add(pose.Latitude.ToString());
+            list.Add(pose.Longitude.ToString());
+            return list;
+        }
+
+        public string returnLatLonString()
+        {
+            var pose = EarthManager.CameraGeospatialPose;
+            string newstring = pose.Latitude.ToString() + "," + pose.Longitude.ToString();
+            return newstring;
+        }
+
+        public List<double> returnLatLonDbl()
+        {
+            List<double> list = new List<double>();
+            var pose = EarthManager.CameraGeospatialPose;
+            list.Add(pose.Latitude);
+            list.Add(pose.Longitude);
+            return list;
+        }
     }
 }
