@@ -44,6 +44,7 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
     {
         [Header("AR Components")]
         public bool autoGeometry;
+        public bool tapplace;
 
         /// <summary>
         /// The ARSessionOrigin used in the sample.
@@ -339,10 +340,10 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
             }
 
             _anchorObjects.Clear();
-            _historyCollection.Collection.Clear();
+            //_historyCollection.Collection.Clear();
             SnackBarText.text = "Anchor(s) cleared!";
             ClearAllButton.gameObject.SetActive(false);
-            SaveGeospatialAnchorHistory();
+            //SaveGeospatialAnchorHistory();
         }
 
         /// <summary>
@@ -476,8 +477,8 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
             _isLocalizing = true;
             SnackBarText.text = _localizingMessage;
 
-            LoadGeospatialAnchorHistory();
-            _shouldResolvingHistory = _historyCollection.Collection.Count > 0;
+            //LoadGeospatialAnchorHistory();
+            //_shouldResolvingHistory = _historyCollection.Collection.Count > 0;
 
             SwitchToARView(PlayerPrefs.HasKey(_hasDisplayedPrivacyPromptKey));
 
@@ -532,7 +533,7 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
             }
 
             _anchorObjects.Clear();
-            SaveGeospatialAnchorHistory();
+            //SaveGeospatialAnchorHistory();
 
             if (StreetscapeGeometryManager)
             {
@@ -712,8 +713,10 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
                     && !EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId)
                     && _anchorObjects.Count < _storageLimit)
                 {
-                    // Set anchor on screen tap.
-                    PlaceAnchorByScreenTap(Input.GetTouch(0).position);
+                    if (tapplace == true)
+                    {
+                        PlaceAnchorByScreenTap(Input.GetTouch(0).position);
+                    }
                 }
 
                 // Hide anchor settings and toggles if the storage limit has been reached.
@@ -903,12 +906,12 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
                 anchorGO.transform.parent = result.Anchor.gameObject.transform;
 
                 _anchorObjects.Add(result.Anchor.gameObject);
-                _historyCollection.Collection.Add(history);
+                //_historyCollection.Collection.Add(history);
 
                 SnackBarText.text = GetDisplayStringForAnchorPlacedSuccess();
 
                 ClearAllButton.gameObject.SetActive(_anchorObjects.Count > 0);
-                SaveGeospatialAnchorHistory();
+                //SaveGeospatialAnchorHistory();
             }
             else
             {
@@ -932,12 +935,12 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
                 anchorGO.transform.parent = result.Anchor.gameObject.transform;
 
                 _anchorObjects.Add(result.Anchor.gameObject);
-                _historyCollection.Collection.Add(history);
+                //_historyCollection.Collection.Add(history);
 
                 SnackBarText.text = GetDisplayStringForAnchorPlacedSuccess();
 
                 ClearAllButton.gameObject.SetActive(_anchorObjects.Count > 0);
-                SaveGeospatialAnchorHistory();
+                //SaveGeospatialAnchorHistory();
             }
             else
             {
@@ -999,11 +1002,11 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
                             hitResults[0].trackableId);
                         if (anchor != null)
                         {
-                            _historyCollection.Collection.Add(history);
+                            //_historyCollection.Collection.Add(history);
                         }
 
                         ClearAllButton.gameObject.SetActive(_anchorObjects.Count > 0);
-                        SaveGeospatialAnchorHistory();
+                        //SaveGeospatialAnchorHistory();
                     }
                 }
 
@@ -1035,11 +1038,11 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
                 var anchor = PlaceGeospatialAnchor(history);
                 if (anchor != null)
                 {
-                    _historyCollection.Collection.Add(history);
+                    //_historyCollection.Collection.Add(history);
                 }
 
                 ClearAllButton.gameObject.SetActive(_anchorObjects.Count > 0);
-                SaveGeospatialAnchorHistory();
+                //SaveGeospatialAnchorHistory();
             }
         }
 
@@ -1103,9 +1106,9 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
                     if (anchor != null)
                     {
                         _anchorObjects.Add(anchor.gameObject);
-                        _historyCollection.Collection.Add(history);
+                        //_historyCollection.Collection.Add(history);
                         ClearAllButton.gameObject.SetActive(_anchorObjects.Count > 0);
-                        SaveGeospatialAnchorHistory();
+                        //SaveGeospatialAnchorHistory();
 
                         SnackBarText.text = GetDisplayStringForAnchorPlacedSuccess();
                     }

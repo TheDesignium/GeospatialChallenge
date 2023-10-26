@@ -171,9 +171,17 @@ public class Rope : MonoBehaviour
         linePositions = new Vector3[totalNodes];
 
         _isReady = true;
+
+        StartCoroutine(stopSim());
     }
 
-    private bool IsMultiple(int number, int multiple)
+    IEnumerator stopSim()
+    {
+            yield return new WaitForSeconds(5);
+            _isReady = false;
+    }
+
+        private bool IsMultiple(int number, int multiple)
     {
         return number % multiple == 0;
     }

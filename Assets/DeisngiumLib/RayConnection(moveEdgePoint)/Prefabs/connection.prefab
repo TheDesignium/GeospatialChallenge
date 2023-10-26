@@ -18,7 +18,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &4036131109536047784
 Transform:
   m_ObjectHideFlags: 0
@@ -47,16 +47,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1590b918f76074741a5bf62320db8a53, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _lineRenderer: {fileID: 0}
-  _nodePrefab: {fileID: 2704655296997197346, guid: 695d5346e45f0427c9059a390632df61, type: 3}
+  _lineRenderer: {fileID: 7697552695079331634}
+  _nodePrefab: {fileID: 0}
   _displayRope: {fileID: 4036131109993125999}
   _lineShowEnableAfterEnd: 0
-  _keepUpdateEdgePoint: 0
+  _keepUpdateEdgePoint: 1
   _count: 0
   _nodeObjs: []
 --- !u!120 &4036131109536047786
 LineRenderer:
-  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -101,7 +100,7 @@ LineRenderer:
   - {x: 0, y: 0, z: 1}
   m_Parameters:
     serializedVersion: 3
-    widthMultiplier: 0.2
+    widthMultiplier: 0.03
     widthCurve:
       serializedVersion: 2
       m_Curve:
@@ -144,20 +143,16 @@ LineRenderer:
       atime6: 0
       atime7: 0
       m_Mode: 0
-      m_ColorSpace: -1
       m_NumColorKeys: 2
       m_NumAlphaKeys: 2
     numCornerVertices: 0
     numCapVertices: 0
     alignment: 0
     textureMode: 0
-    textureScale: {x: 1, y: 1}
     shadowBias: 0.5
     generateLightingData: 0
-  m_MaskInteraction: 0
   m_UseWorldSpace: 1
   m_Loop: 0
-  m_ApplyActiveColorSpace: 0
 --- !u!114 &7697552695079331634
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -215,8 +210,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: daf71302d510df147b3f07dee056e8fd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  link: {fileID: -2432090755550338912, guid: 5a86ecbc4d70abd46a6508905eeb6855, type: 3}
-  linkMaterial: {fileID: 2100000, guid: 18c7d07528baa45ea8fb7aaf2e096976, type: 2}
+  link: {fileID: -2432090755550338912, guid: 6b0188350fb667a4788c2293274a6203, type: 3}
+  linkMaterial: {fileID: 2100000, guid: 8569087cb1a36491d9745ab6f2cbfb32, type: 2}
   step: 3
   nodeDistance: 0.08
   nodeScale: 0.2
@@ -225,18 +220,26 @@ MonoBehaviour:
   totalNodes: 20
   velocityDampen: 0.9
   stiffness: 0.8
-  iterateCollisionsEvery: 1
+  iterateCollisionsEvery: 3
   iterations: 15
   colliderBufferSize: 1
   startLock: {x: 0, y: 0, z: 0}
   ropeWidth: 0.3
-  objResource: {fileID: 11400000, guid: 9487af7d78e0b418ea07f2d01e17f14b, type: 2}
+  objResource: {fileID: 11400000, guid: b97e057365876534bbb1c6c7eb82cf3a, type: 2}
   attachObjs: []
   attachIndexs: 
   _displayTimer: 0
+  numberToCheck: 0
+  multipleOf: 2
+  colours:
+  - {r: 1, g: 0, b: 0, a: 1}
+  - {r: 0.1318679, g: 0.5849056, b: 0, a: 1}
+  - {r: 0.5253563, g: 0.990566, b: 0.38781592, a: 1}
+  - {r: 1, g: 0.4258666, b: 0.4198113, a: 1}
+  - {r: 1, g: 0.86329013, b: 0.25943398, a: 1}
+  - {r: 1, g: 1, b: 1, a: 1}
 --- !u!120 &4036131109993125998
 LineRenderer:
-  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -324,17 +327,13 @@ LineRenderer:
       atime6: 0
       atime7: 0
       m_Mode: 0
-      m_ColorSpace: -1
       m_NumColorKeys: 3
       m_NumAlphaKeys: 2
     numCornerVertices: 0
     numCapVertices: 0
     alignment: 0
     textureMode: 0
-    textureScale: {x: 1, y: 1}
     shadowBias: 0.5
     generateLightingData: 0
-  m_MaskInteraction: 0
   m_UseWorldSpace: 1
   m_Loop: 0
-  m_ApplyActiveColorSpace: 0
