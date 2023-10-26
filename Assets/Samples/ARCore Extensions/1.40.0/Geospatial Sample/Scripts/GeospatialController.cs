@@ -43,6 +43,7 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
     public class GeospatialController : MonoBehaviour
     {
         [Header("AR Components")]
+        public bool autoGeometry;
 
         /// <summary>
         /// The ARSessionOrigin used in the sample.
@@ -508,6 +509,11 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
             }
         }
 
+        void Start()
+        {
+            OnGetStartedClicked();
+        }
+
         /// <summary>
         /// Unity's OnDisable() method.
         /// </summary>
@@ -811,6 +817,11 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
                 renderObject.transform.rotation = streetscapegeometry.pose.rotation;
 
                 _streetscapegeometryGOs.Add(streetscapegeometry.trackableId, renderObject);
+
+                MeshFilter meshFilter = renderObject.GetComponent<MeshFilter>();
+                MeshCollider meshCollider = renderObject.AddComponent<MeshCollider>();
+                meshCollider.sharedMesh = meshFilter.sharedMesh;
+                renderObject.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             }
         }
 
@@ -1233,6 +1244,11 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
             {
                 _asyncCheck = AvailabilityCheck();
                 StartCoroutine(_asyncCheck);
+            }
+
+            if (autoGeometry == true)
+            {
+                OnGeometryToggled(true);
             }
         }
 

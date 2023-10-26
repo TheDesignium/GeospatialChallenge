@@ -87,6 +87,13 @@ public class Rope : MonoBehaviour
     float _displaySpeed = 100f;
     [SerializeField] float _displayTimer;
 
+    int previous;
+    int previousprevious;
+    public int numberToCheck = 0; // The number to check for being a multiple
+    public int multipleOf = 1;     // The number to check if the first number is a multiple of
+
+    public Color[] colours;
+
     public void Set(Vector3 stPos, Vector3 endPos)
     {
         float dist = Vector3.Distance(stPos, endPos);
@@ -130,18 +137,32 @@ public class Rope : MonoBehaviour
             matrices[i] = Matrix4x4.TRS(startPosition, Quaternion.identity, Vector3.one);
 
             startPosition.y -= nodeDistance;
-            colors[i] = Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f);
+
+            //colors[i] = Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f);
+            colors[i] = colours[UnityEngine.Random.Range(0, 4)];
 
             // attach object
             if (i % step == 0 && (i >= 2 && i <= totalNodes - 3))
             {
-              int oIndex = Random.Range(0, objResource.objlist.Count);
-              GameObject obj = Instantiate(objResource.objlist[oIndex].obj, Vector3.zero, Quaternion.identity);
-              obj.transform.SetParent(this.transform, false);
-              obj.name = $"{objResource.objlist[oIndex].name}_{i}";
-              obj.SetActive(false);
-              attachObjs.Add(obj);
-              attachIndexs.Add(i);
+                    if (IsMultiple(numberToCheck, multipleOf))
+                    {
+                        int oIndex = 0;
+                        do
+                        {
+                            oIndex = UnityEngine.Random.Range(0, objResource.objlist.Count);
+                        } while (oIndex == previous || oIndex == previousprevious);
+
+                        previousprevious = previous;
+                        previous = oIndex;
+                        //int oIndex = Random.Range(0, objResource.objlist.Count);
+                        GameObject obj = Instantiate(objResource.objlist[oIndex].obj, Vector3.zero, Quaternion.identity);
+                        obj.transform.SetParent(this.transform, false);
+                        obj.name = $"{objResource.objlist[oIndex].name}_{i}";
+                        obj.SetActive(false);
+                        attachObjs.Add(obj);
+                        attachIndexs.Add(i);
+                    }
+                    numberToCheck += 1;
             }
         }
         block.SetVectorArray("_Color", colors);
@@ -152,7 +173,12 @@ public class Rope : MonoBehaviour
         _isReady = true;
     }
 
-    public void UpdateStartPt(Vector3 stPos)
+    private bool IsMultiple(int number, int multiple)
+    {
+        return number % multiple == 0;
+    }
+
+        public void UpdateStartPt(Vector3 stPos)
     {
       startLock = stPos;
     }

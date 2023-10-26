@@ -40,26 +40,48 @@ namespace Deisgnium.RayConnection
       void Update()
       {
 
+#if UNITY_EDITOR
         if (Input.GetMouseButtonDown(0))
         {
+          Debug.Log("tap");
+
           Vector2 mousePos = Input.mousePosition;
-          Ray ray = _cam.ViewportPointToRay(_cam.ScreenToViewportPoint(mousePos));
+
           if (Time.time - touchTime > 0.3f)
           {
-            if (Physics.Raycast(ray, out RaycastHit hit, 1000))
-            {
-              Vector3 plane = Vector3.ProjectOnPlane(Vector3.forward + Vector3.right, hit.normal);
-              Cursor.transform.position = hit.point + hit.normal * m_Offset;
-              Cursor.transform.localRotation = Quaternion.LookRotation(plane, hit.normal);
-            }
+            Cursor.transform.position = _cam.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, Random.Range(5,10)));
             DrawCheck();
             touchTime = Time.time;
           }
         }
+#endif
+#if !UNITY_EDITOR
 
-      }
+            if (Input.touchCount > 0)
+            {
+                Touch touch = Input.GetTouch(0);
 
-      void FixedUpdate()
+                if (touch.phase == TouchPhase.Began)
+                {
+                    Ray ray = _cam.ScreenPointToRay(Input.GetTouch(0).position);
+                    RaycastHit hit;
+                    if (Physics.Raycast(ray, out hit, Mathf.Infinity) && Input.GetTouch(0).position.y > 300)
+                    {
+                        Vector3 hp = hit.point;
+                        if (Time.time - touchTime > 0.3f)
+                        {
+                            Cursor.transform.position = hp;
+                            DrawCheck();
+                            touchTime = Time.time;
+                        }
+                    }
+                }
+            }
+#endif
+
+        }
+
+        void FixedUpdate()
       {
         if (_currentLine != null)
         {
