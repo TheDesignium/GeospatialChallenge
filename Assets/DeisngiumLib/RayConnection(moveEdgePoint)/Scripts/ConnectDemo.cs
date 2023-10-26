@@ -29,9 +29,13 @@ namespace Deisgnium.RayConnection
          // incase frame rate is too hight on Eidtor, the item pops up timing is wrong
          Application.targetFrameRate = 60;
 #endif
-      }
+#if !UNITY_EDITOR
+         // incase frame rate is too hight on Eidtor, the item pops up timing is wrong
+         Application.targetFrameRate = 30;
+#endif
+        }
 
-      void OnDestroy()
+        void OnDestroy()
       {
         _connectors.ReleaseGameObjectList();
       }
