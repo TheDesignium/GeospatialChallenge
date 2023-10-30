@@ -47,7 +47,7 @@ namespace Deisgnium.RayConnection
             _linePoints.Add(_nodeObjs[i].transform.position);
           _linePoints.Add(point);
           _lineRenderer.setLines(_linePoints);
-          ShowLine(true);
+          ShowLine(false);
         }
         else
         {

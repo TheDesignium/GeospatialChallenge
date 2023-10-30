@@ -12,16 +12,22 @@ namespace Deisgnium.RayConnection
       [SerializeField] private GameObject Cursor;
 
       // draw connection
-      private int _nodeMaxNums = 2;
+      public int _nodeMaxNums = 2;
+      public int maxObjects = 20;
+      public float distanceLimit;
       [SerializeField]
       private int _count = 0;
-      private List<GameObject> _connectors = null;
+      public List<GameObject> _connectors = null;
       public List<GameObject> connectors => _connectors;
       private GameObject _currentLineObj = null;
       private LineNode _currentLine = null;
 
       private float touchTime;
       private float m_Offset = 0.03f;
+      float distance;
+
+      public Vector3 startPosition;
+      public Vector3 endPosition;
 
       void Start()
       {
@@ -53,8 +59,21 @@ namespace Deisgnium.RayConnection
 
           if (Time.time - touchTime > 0.3f)
           {
-            Cursor.transform.position = _cam.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, Random.Range(5,10)));
-            DrawCheck();
+            Vector3 v3 = _cam.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, Random.Range(5,50)));
+            Cursor.transform.position = v3;
+
+            if(_count > 0)
+            {
+              float thedistance = Vector3.Distance(startPosition, v3);
+              if(thedistance < distanceLimit)
+              {
+                  DrawCheck(v3);
+              }
+            }
+            else
+            {
+              DrawCheck(v3);
+            }
             touchTime = Time.time;
           }
         }
@@ -75,7 +94,19 @@ namespace Deisgnium.RayConnection
                         if (Time.time - touchTime > 0.3f)
                         {
                             Cursor.transform.position = hp;
-                            DrawCheck();
+                            if(_count > 0)
+                            {
+                              float distance = Vector3.Distance(startPosition, hp);
+                              Debug.Log(distance);
+                              if(distance < distanceLimit)
+                              {
+                                  DrawCheck(hp);
+                              }
+                            }
+                            else
+                            {
+                              DrawCheck(hp);
+                            }
                             touchTime = Time.time;
                         }
                     }
@@ -93,21 +124,35 @@ namespace Deisgnium.RayConnection
         }
       }
 
-      private void DrawCheck()
+      private void DrawCheck(Vector3 hp)
       {
+        Debug.Log(hp);
+
+        if(_count == 0)
+        {
+          startPosition = hp;
+        }
+
         if(_count < _nodeMaxNums) {
           AddNode();
         }
-        if(_count ==  _nodeMaxNums)
+        if(_count == _nodeMaxNums)
         {
-          EndNode();
+          endPosition = hp;
+          distance = Vector3.Distance(startPosition, endPosition);
+          Debug.Log(distance);
+          if(distance < distanceLimit)
+          {
+              EndNode();
+          }
         }
-
+/*
         // animation the cursor for hinting behaviour
         Cursor.transform.DOScale(0.2f, 0.15f)
                         .SetLoops(2, LoopType.Yoyo)
                         .SetRelative(true)
                         .SetEase(Ease.OutCubic);
+*/
       }
 
       private void AddNode()
@@ -137,12 +182,23 @@ namespace Deisgnium.RayConnection
           _count ++;
         }
 
+        if (_connectors.Count >= maxObjects)
+        {
+            // Remove and delete the oldest GameObject (first in the list)
+            GameObject toRemove = _connectors[0];
+            _connectors.RemoveAt(0); // Removes the first element
+            Destroy(toRemove); // Deletes the GameObject from the scene
+        }
+
       }
 
       private void EndNode()
       {
         print ("End Node");
         _currentLine.EndNode();
+
+        _currentLineObj.transform.GetChild(0).gameObject.GetComponent<LineRendererParticleEmitter>().setUp(distance, distanceLimit);
+
         _currentLineObj = null;
         _currentLine = null;
         _count = 0;
