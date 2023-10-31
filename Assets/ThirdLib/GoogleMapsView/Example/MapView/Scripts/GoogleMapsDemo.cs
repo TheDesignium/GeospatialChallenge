@@ -35,6 +35,8 @@ public class GoogleMapsDemo : MonoBehaviour
 	public Texture2D newArkAreaImage;
 	public Texture2D icon;
 
+	public Texture2D[] icons;
+
 	public TextAsset customStyleJson;
 	public TextAsset heatmapDataJsonPoliceStations;
 	public TextAsset heatmapDataJsonMedicare;
@@ -177,43 +179,7 @@ public class GoogleMapsDemo : MonoBehaviour
 		const int zoom = 18;
 		AnimateCamera(CameraUpdate.NewLatLngZoom(loc, zoom));
 	}
-	public void setAreaPlusCodes(float nelatf, float nelonf, float swlatf, float swlonf, float loclatf, float loclonf)
-	{
-		LatLng loc = new LatLng(loclatf,loclonf);
 
-		LatLng A = new LatLng(nelatf,nelonf); //northeast
-		LatLng B = new LatLng(swlatf,nelonf); //southeast - modified
-		LatLng C = new LatLng(swlatf,swlonf); //southwest
-		LatLng D = new LatLng(nelatf,swlonf); //northwest - modified
-
-		var polyline = _map.AddPolyline(CreateInitialPolylineOptions(A,B,C,D));
-
-		if(previousLine != null)
-		{
-			previousLine.Remove();
-		}
-
-		previousLine = polyline;
-
-		const int zoom = 19;
-		//AnimateCamera(CameraUpdate.NewLatLngZoom(loc, zoom));
-
-		if(setOverlay == true)
-		{
-			//debuglat = loclatf;
-			//debuglon = loclonf;
-			float nsDistance = distance.CalculateDistance(swlatf,nelatf,swlonf,swlonf);
-			float ewDistance = distance.CalculateDistance(nelatf,nelatf,swlonf,nelonf);
-			GroundOverlay groundOverlay = _map.AddGroundOverlay(CreateInitialGroundOverlayOptions(loclatf,loclonf,ewDistance,nsDistance));
-
-			if(previousOverlay != null)
-			{
-			previousOverlay.Remove();
-			}
-
-			previousOverlay = groundOverlay;
-		}
-	}
 
 	GroundOverlayOptions CreateInitialGroundOverlayOptions(float loclatf, float loclonf, float ewDistance, float nsDistance)
 	{
@@ -436,21 +402,9 @@ public class GoogleMapsDemo : MonoBehaviour
 			Debug.Log("Map clicked: " + point);
 			//_map.AddMarker(DemoUtils.RandomColorMarkerOptions(point));
 			//_geo.parseSetAnchor(point.ToString());
-			if(plusCodes == true)
-			{
-				_gps.getPlusCodeTap(point.Latitude.ToString(), point.Longitude.ToString());
-			}
+
 			if(directions == true)
 			{
-				if(_geo != null)
-				{
-					_geo.clearAnchors();
-				}
-				if(_gps != null)
-				{
-					_gps.getDirectionsMapClick(point.ToString());
-					_map.AddMarker(DemoUtils.RandomColorMarkerOptions(point));
-				}
 				if(poi != null)
 				{
 					poi.startOnTap(point.Latitude, point.Longitude);
@@ -1233,6 +1187,11 @@ public class GoogleMapsDemo : MonoBehaviour
 	public void setLatLng(LatLng point)
 	{
 		_map.AddMarker(DemoUtils.RandomColorMarkerOptions(point));
+	}
+
+	public void setPOI(LatLng point, int icn)
+	{
+		_map.AddMarker(DemoUtils.CreateTexture2DMarker(point, icons[icn]));
 	}
 
 	public void screenShot()

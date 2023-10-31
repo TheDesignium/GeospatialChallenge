@@ -26,6 +26,7 @@ public class travelAPI : MonoBehaviour
 	public string lat = "35.70086";
 	public string radius = "1000";
 	public string limit = "20";
+	public int catindex = 1;
 
 	public Types _types;
 	public Conditions _conds;
@@ -242,7 +243,8 @@ public class travelAPI : MonoBehaviour
 	IEnumerator manualSet(int i)
 	{
 		string cat = catagory;
-
+		catindex = i;
+		
 		if(i == 0)
 		{
 			catagory = "commercial.convenience";

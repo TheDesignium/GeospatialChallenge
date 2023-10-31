@@ -64,6 +64,9 @@ public class directionsPOI : MonoBehaviour
 
 	public bool miniMap;
 
+	public string debugpoints;
+	public string debugpoints2;
+
 	public TMP_Text resultText;
 
     private void Start()
@@ -74,40 +77,65 @@ public class directionsPOI : MonoBehaviour
 			}
     }
 
+		public void debuglineone()
+		{
+			google.OnClearMapClick();
+			latlngList.Clear();
+			latlngList = DecodePolylinePoints(debugpoints);
+			google.setRoute(latlngList);
+		}
+		public void debuglinetwo()
+		{
+			google.OnClearMapClick();
+			latlngList.Clear();
+			latlngList = DecodePolylinePoints(debugpoints2);
+			google.setRoute(latlngList);
+		}
+
+		public void debuglineoneB()
+		{
+			google.OnClearMapClick();
+			latlngList.Clear();
+			latlngList = Decode(debugpoints);
+			google.setRoute(latlngList);
+		}
+		public void debuglinetwoB()
+		{
+			google.OnClearMapClick();
+			latlngList.Clear();
+			latlngList = Decode(debugpoints2);
+			google.setRoute(latlngList);
+		}
 
 	void Update()
 	{
 		if(Input.GetKeyUp(KeyCode.Z))
 		{
-			float.TryParse(latfrom, out latF);
-			float.TryParse(lonfrom, out lonF);
-			float.TryParse(latto, out latT);
-			float.TryParse(lonto, out lonT);
-			StartCoroutine(checkPOIs());
+			StartCoroutine(GetDirections(latfrom,lonfrom,latto,lonto));
 		}
 		if(Input.GetKeyUp(KeyCode.X))
 		{
-			interpolatedLatitudes.Clear();
-			interpolatedLongitudes.Clear();
-			CalculateInterpolatedGPSPoints(ref interpolatedLatitudes, ref interpolatedLongitudes);
+			startOnTap(latitudeB,longitudeB);
 		}
 	}
 
 	public void startOnTap(double lt, double ln)
 	{
-		loadingUI.SetActive(true);
-		StartCoroutine(GetLocation(true));
 		latto = lt.ToString();
 		lonto = ln.ToString();
 		latT = (float)lt;
 		lonT = (float)ln;
+		loadingUI.SetActive(true);
+		StartCoroutine(GetLocation(true));
 	}
 
 	IEnumerator checkPOIs()
 	{
+
+		#if !UNITY_EDITOR
 		google.OnClearMapClick();
 		geo.clearAll();
-
+		#endif
 		poiList.Clear();
 		POIlatlngList.Clear();
 		poiPoint = 0;
@@ -207,7 +235,7 @@ public class directionsPOI : MonoBehaviour
 				UnityEngine.Debug.Log(ll);
 #if !UNITY_EDITOR
 				geo.setAnchorLatLng(ll);
-				google.setLatLng(ll);
+				google.setPOI(ll, details.catindex);
 #endif
 			}
 			//UnityEngine.Debug.Log("closest" + poiList[poiPoint].POI + " " + poiList[poiPoint].routePoint + " " + poiList[poiPoint].distance);
@@ -308,7 +336,11 @@ public class directionsPOI : MonoBehaviour
 		allLatitudes.Clear();
 		allLongitudes.Clear();
 
-		UnityWebRequest www = UnityWebRequest.Get("https://maps.googleapis.com/maps/api/directions/json?origin=" + fromLat.ToString() + "," + fromLon + "&destination=" + toLat + "," + toLon + "&mode=" + transitMode + "&key=" + api);
+		UnityEngine.Debug.Log("origin=" + fromLat.ToString() + "," + fromLon.ToString() + "&destination=" + toLat.ToString() + "," + toLon.ToString());
+
+		UnityWebRequest www = UnityWebRequest.Get("https://maps.googleapis.com/maps/api/directions/json?origin=" + fromLat.ToString() + "," + fromLon.ToString() + "&destination=" + toLat.ToString() + "," + toLon.ToString() + "&mode=" + transitMode + "&key=" + api);
+
+//https://maps.googleapis.com/maps/api/directions/json?origin=35.62561463902309,139.71957139851457&destination=35.6023835317904,139.712882302701&mode=walking&key=AIzaSyAPO8FgjmYlLv46fZ2Rs-3i0-UMavaCXM0
 
         yield return www.SendWebRequest();
 
@@ -323,28 +355,19 @@ public class directionsPOI : MonoBehaviour
             lonList.Clear();
             pointsList.Clear();
 
-            stepsList = www.downloadHandler.text.Split('\n').ToList();
-            foreach(string s in stepsList)
-            {
-              if(s.Contains("\"lat"))
-              {
-                latList.Add(cleanPlusCode(s));
-              }
-              else if(s.Contains("\"lng"))
-              {
-                lonList.Add(cleanPlusCode(s));
-              }
-              else if(s.Contains("\"points"))
-              {
-                string p = s.Replace("\"", "");
-                p = p.Replace("points : ", "");
-                p = p.Replace(" ", "");
-                pointsList.Add(p);
-              }
-            }
+						UnityEngine.Debug.Log(www.downloadHandler.text);
+
+						GoogleMapsResponse response = JsonUtility.FromJson<GoogleMapsResponse>(www.downloadHandler.text);
 
             latlngList.Clear();
-            latlngList = DecodePolylinePoints(pointsList[pointsList.Count() - 1]);
+            //latlngList = DecodePolylinePoints(pointsList[pointsList.Count() - 1]);
+
+						//latlngList = ExtractLatLngFromSteps(www.downloadHandler.text);
+						latlngList = ExtractAllLatLngSteps(www.downloadHandler.text);
+
+						UnityEngine.Debug.Log(response.routes[0].legs[0].steps.Count());
+
+						//latlngList = DecodePolylinePoints(response.routes[0].overview_polyline);
 						LatLng previousLL = latlngList[0];
 
 						yield return new WaitForEndOfFrame();
@@ -377,12 +400,6 @@ public class directionsPOI : MonoBehaviour
 
         }
 
-    }
-
-	public string cleanPlusCode(string s)
-    {
-      var stripped = Regex.Replace(s, "[^0-9.]", "");
-      return stripped;
     }
 
 	public List<LatLng> DecodePolylinePoints(string encodedPoints)
@@ -446,10 +463,117 @@ public class directionsPOI : MonoBehaviour
         return poly;
    }
 
+	List<LatLng> Decode(string encodedPoints)
+	{
+			if (string.IsNullOrEmpty(encodedPoints))
+					throw new ArgumentNullException("encodedPoints");
+
+					List<LatLng> poly = new List<LatLng>();
+
+			char[] polylineChars = encodedPoints.ToCharArray();
+			int index = 0;
+
+			int currentLat = 0;
+			int currentLng = 0;
+			int next5bits;
+			int sum;
+			int shifter;
+
+			while (index < polylineChars.Length)
+			{
+					// calculate next latitude
+					sum = 0;
+					shifter = 0;
+					do
+					{
+							next5bits = (int)polylineChars[index++] - 63;
+							sum |= (next5bits & 31) << shifter;
+							shifter += 5;
+					} while (next5bits >= 32 && index < polylineChars.Length);
+
+					if (index >= polylineChars.Length)
+							break;
+
+					currentLat += (sum & 1) == 1 ? ~(sum >> 1) : (sum >> 1);
+
+					//calculate next longitude
+					sum = 0;
+					shifter = 0;
+					do
+					{
+							next5bits = (int)polylineChars[index++] - 63;
+							sum |= (next5bits & 31) << shifter;
+							shifter += 5;
+					} while (next5bits >= 32 && index < polylineChars.Length);
+
+					if (index >= polylineChars.Length && next5bits >= 32)
+							break;
+
+					currentLng += (sum & 1) == 1 ? ~(sum >> 1) : (sum >> 1);
+
+					LatLng p = new LatLng(Convert.ToDouble(currentLat) / 1E5,Convert.ToDouble(currentLng) / 1E5);
+
+					poly.Add(p);
+			}
+
+			return poly;
+
+	}
+
+	public List<LatLng> ExtractLatLngFromSteps(string json)
+	{
+			GoogleMapsResponse response = JsonUtility.FromJson<GoogleMapsResponse>(json);
+			List<LatLng> latLngList = new List<LatLng>();
+
+			// Assuming the JSON is correct and there's at least one route and one leg
+			Leg firstLeg = response.routes[0].legs[0];
+
+			foreach (Step step in firstLeg.steps)
+			{
+					// Adding start location of the step
+					LatLng startLatLng = new LatLng(step.start_location.lat, step.start_location.lng);
+					latLngList.Add(startLatLng);
+
+					// Adding end location of the step
+					LatLng endLatLng = new LatLng(step.end_location.lat, step.end_location.lng);
+					latLngList.Add(endLatLng);
+
+					latList.Add(step.start_location.lat.ToString());
+					lonList.Add(step.start_location.lng.ToString());
+			}
+
+			return latLngList;
+	}
+
+	public List<LatLng> ExtractAllLatLngSteps(string json)
+	{
+			GoogleMapsResponse response = JsonUtility.FromJson<GoogleMapsResponse>(json);
+			List<LatLng> allPoints = new List<LatLng>();
+
+			if (response.status == "OK" && response.routes != null && response.routes.Length > 0)
+			{
+					foreach (var step in response.routes[0].legs[0].steps)
+					{
+						if(step.polyline != null)
+						{
+							UnityEngine.Debug.Log(step.polyline.points);
+							List<LatLng> stepPoints = DecodePolylinePoints(step.polyline.points);
+							allPoints.AddRange(stepPoints);
+						}
+					}
+			}
+			else
+			{
+					UnityEngine.Debug.LogWarning("No routes found or status is not OK.");
+			}
+
+			return allPoints;
+	}
+
 	 public IEnumerator GetLocation(bool routeRequest)
 	 {
 				 yield return new WaitForSeconds(1);
-
+#if !UNITY_EDITOR
 				 Input.location.Start();
 
 			 // First, check if user has location service enabled
@@ -498,6 +622,11 @@ public class directionsPOI : MonoBehaviour
 					StartCoroutine(checkPOIs());
 				}
 			 }
+#endif
+#if UNITY_EDITOR
+			StartCoroutine(checkPOIs());
+#endif
+
 	 }
 
 	 IEnumerator fadeOutText(string s)
@@ -526,4 +655,84 @@ public class POIDetails
 	public float distance;
 	public LatLng routePoint;
 	public LatLng POI;
+}
+
+public class GoogleMapsResponse
+{
+    public GeocodedWaypoint[] geocoded_waypoints;
+    public Route[] routes;
+    public string status;
+}
+
+[System.Serializable]
+public class GeocodedWaypoint
+{
+    public string geocoder_status;
+    public string place_id;
+    public string[] types;
+}
+
+[System.Serializable]
+public class Route
+{
+    public string bounds;
+    public string copyrights;
+    public Leg[] legs;
+    public EncodedPolyline overview_polyline;
+    public string summary;
+    public string[] warnings;
+    public int[] waypoint_order;
+}
+
+[System.Serializable]
+public class Location
+{
+    public double lat;
+    public double lng;
+}
+
+[System.Serializable]
+public class Leg
+{
+    public Distance distance;
+    public Duration duration;
+    public string end_address;
+    public Location end_location;
+    public string start_address;
+    public Location start_location;
+    public Step[] steps;
+    public object[] traffic_speed_entry;
+    public object[] via_waypoint;
+}
+
+[System.Serializable]
+public class Distance
+{
+    public string text;
+    public int value;
+}
+
+[System.Serializable]
+public class Duration
+{
+    public string text;
+    public int value;
+}
+
+[System.Serializable]
+public class Step
+{
+    public Distance distance;
+    public Duration duration;
+    public Location end_location;
+    public string html_instructions;
+    public EncodedPolyline polyline;
+    public Location start_location;
+    public string travel_mode;
+}
+
+[Serializable]
+public class EncodedPolyline
+{
+    public string points; // This is the string that contains the encoded polyline
 }

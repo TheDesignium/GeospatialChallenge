@@ -1068,99 +1068,10 @@ public class setGPS : MonoBehaviour
 
    public void getPlusCodeTap(string codelat, string codelon)
    {
-	   StartCoroutine(GetPlusCodeManual(codelat,codelon));
+	   //StartCoroutine(GetPlusCodeManual(codelat,codelon));
    }
 
-      IEnumerator GetPlusCodeManual(string codelat, string codelon)
-    {
-
-        UnityWebRequest www = UnityWebRequest.Get("https://plus.codes/api?address=" + codelat + "," + codelon + "&ekey=" + api + "&email=" + "matt@designium.jp");
-
-        yield return www.SendWebRequest();
-
-        if (www.isNetworkError)
-        {
-            Debug.Log(www.error);
-        }
-        else
-        {
-          //Debug.Log(www.downloadHandler.text);
-
-          pluscodeList.Clear();
-          pluscodeList = www.downloadHandler.text.Split('\n').ToList();
-
-          string code = pluscodeList[2];
-          code = code.Replace("\"", "");
-          code = code.Replace("global_code:", "");
-          code = code.Replace(",", "");
-          code = code.Replace(" ", "");
-  	      Debug.Log(code);
-          //    "global_code": "8Q7XJPG9+6V",
-
-          string nelat = cleanPlusCode(pluscodeList[6]);
-          string nelon = cleanPlusCode(pluscodeList[7]);
-          string swlat = cleanPlusCode(pluscodeList[10]);
-          string swlon = cleanPlusCode(pluscodeList[11]);
-          string loclat = cleanPlusCode(pluscodeList[15]);
-          string loclon = cleanPlusCode(pluscodeList[16]);
-
-          float nelatf = 0; float nelonf = 0; float swlatf = 0; float swlonf = 0; float loclatf = 0; float loclonf = 0;
-
-          float.TryParse(nelat, out nelatf);
-          float.TryParse(nelon, out nelonf);
-          float.TryParse(swlat, out swlatf);
-          float.TryParse(swlon, out swlonf);
-          float.TryParse(loclat, out loclatf);
-          float.TryParse(loclon, out loclonf);
-
-          _google.setAreaPlusCodes(nelatf,nelonf,swlatf,swlonf,loclatf,loclonf);
-
-          //_gc.setAnchorPlusCode(nelatf,nelonf,0);
-          //_gc.setAnchorPlusCode(swlatf,nelonf,1);
-          //_gc.setAnchorPlusCode(swlatf,swlonf,2);
-          //_gc.setAnchorPlusCode(nelatf,swlonf,3);
-          //_gc.setAnchorPlusCode(loclatf,loclonf,4);
-
-          heading = UnityEngine.Random.Range(0,360).ToString();
-          string baseurl = "https://maps.googleapis.com/maps/api/streetview?size=400x400&location=";
-          string svurl = baseurl + loclat + "," + loclonf + "&fov=80&heading=" + heading + "&pitch=0&key=" + api; //&signature=YOUR_SIGNATURE
-
-          using (UnityWebRequest uwr = UnityWebRequestTexture.GetTexture(svurl))
-          {
-            yield return uwr.SendWebRequest();
-
-            if (uwr.result != UnityWebRequest.Result.Success)
-            {
-                Debug.Log(uwr.error);
-            }
-            else
-            {
-                // Get downloaded asset bundle
-                var texture = DownloadHandlerTexture.GetContent(uwr);
-                debugMaterial.mainTexture = texture;
-                Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.zero);
-                // Set sprite to Image component
-                SVimage.sprite = sprite;
-            }
-          }
-
-          //Color c = Color.white;
-          //plusCodeTxt.color = c;
-          plusCodeTxt.text = code;
-          detailTxt.text = loclat.ToString() + ", " + loclonf.ToString();
-          /*
-          while(c.a > 0)
-          {
-            c.a -= 0.02f;
-            plusCodeTxt.color = c;
-            yield return new WaitForEndOfFrame();
-          }
-          */
-
-          plusdebug.SetActive(true);
-    		}
-      }
-
+  
     /*
 
 		  if(useGeographiclib == true)

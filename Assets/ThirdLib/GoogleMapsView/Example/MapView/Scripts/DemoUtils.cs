@@ -96,17 +96,22 @@ public static class DemoUtils
 		return NewMarkerOptions(london, ImageDescriptor.FromTexture2D(tex));
 	}
 
+	public static MarkerOptions CreateTexture2DMarker(LatLng point, Texture2D tex)
+	{
+		return NewMarkerOptions(point, ImageDescriptor.FromTexture2D(tex));
+	}
+
 	static MarkerOptions NewMarkerOptions(LatLng position, ImageDescriptor imageDescriptor)
 	{
 		return new MarkerOptions()
 			.Position(position)
 			.Icon(imageDescriptor) // image must be in StreamingAssets folder!
 			.Alpha(0.8f) // make semi-transparent image
-			.Anchor(0.5f, 1f) // anchor point of the image
+			.Anchor(0f, 0f) // anchor point of the image
 			.InfoWindowAnchor(0.5f, 1f)
-			.Draggable(true)
+			.Draggable(false)
 			.Flat(false)
-			.Rotation(30f) // Rotate marker a bit
+			.Rotation(0f) // Rotate marker a bit
 			.Snippet("Snippet Text")
 			.Title("Title Text")
 			.Visible(true)
