@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
 
+using TMPro;
+
 namespace Deisgnium.RayConnection
 {
   public class ConnectDemo : MonoBehaviour
@@ -28,6 +30,8 @@ namespace Deisgnium.RayConnection
 
       public Vector3 startPosition;
       public Vector3 endPosition;
+
+      public TMP_Text textUI;
 
       void Start()
       {
@@ -69,6 +73,11 @@ namespace Deisgnium.RayConnection
               {
                   DrawCheck(v3);
               }
+              else
+              {
+                StopCoroutine("fadeOutUI");
+                StartCoroutine("fadeOutUI");
+              }
             }
             else
             {
@@ -101,6 +110,11 @@ namespace Deisgnium.RayConnection
                               if(distance < distanceLimit)
                               {
                                   DrawCheck(hp);
+                              }
+                              else
+                              {
+                                StopCoroutine("fadeOutUI");
+                                StartCoroutine("fadeOutUI");
                               }
                             }
                             else
@@ -210,6 +224,24 @@ namespace Deisgnium.RayConnection
         _currentLineObj = null;
         _currentLine = null;
         _count = 0;
+      }
+
+      IEnumerator fadeOutUI()
+      {
+        Color textcolour = Color.white;
+        float alph = textcolour.a;
+        textUI.color = textcolour;
+        textUI.gameObject.SetActive(true);
+
+        while(alph > 0)
+        {
+          alph = textcolour.a;
+          alph -= 0.01f;
+          textcolour.a = alph;
+          textUI.color = textcolour;
+          yield return new WaitForEndOfFrame();
+        }
+        textUI.gameObject.SetActive(false);
       }
   }
 
