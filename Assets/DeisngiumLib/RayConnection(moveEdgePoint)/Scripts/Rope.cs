@@ -115,7 +115,6 @@ public class Rope : MonoBehaviour
         nodeCollider = nodeTester.AddComponent<SphereCollider>();
         nodeCollider.radius = nodeColliderRadius;
 
-
         matrices = new Matrix4x4[totalNodes];
         colors = new Vector4[totalNodes];
         attachObjs = new List<GameObject>();
