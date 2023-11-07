@@ -263,7 +263,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 9
+  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &66798413
 GameObject:
@@ -3923,22 +3923,21 @@ MonoBehaviour:
   latto: 35.603296464503
   lonto: 139.713274012576
   api: AIzaSyAPO8FgjmYlLv46fZ2Rs-3i0-UMavaCXM0
-  latF: 0
-  lonF: 0
-  latT: 0
-  lonT: 0
-  stepsList: []
-  latList: []
-  lonList: []
-  pointsList: []
+  latF: 35.625683
+  lonF: 139.71956
+  latT: 35.6033
+  lonT: 139.71327
   intervalDistance: 10
   latitudeA: 35.62568352295258
   longitudeA: 139.71956475458757
   latitudeB: 35.60329646450302
   longitudeB: 139.71327401257585
+  allLatitudes: []
+  allLongitudes: []
   POIDistanceLimit: 100
   poiPoint: 0
   miniMap: 1
+  ARNavigation: 1
   debugpoints: qwkxEstwsYVJ@EHDNFHDd@PDBD@HBD@DBrAf@D@PFRBF@HBD@F?NDNDLD`C|@NFRFB@tAh@`@N\\JFBPDHBTFRHLBNHTHXFF@A@RDhAZLDPD?AFB\\Jd@LLBv@R`@LZHF@ACHB?@NDLD~Bl@z@TCJ^J@?DIRFLDd@LJBh@N?AD@|@VB?b@LJDf@L@AD@A@nA\\D@BBj@L?CF@?BhALH@B@D?H@TDRBD@VBRBJ@?AD??@^D^DB@t@HD@?@j@FB?t@JB?`@F?AF@ZDLBRBL@NBL@h@F\\DF@?@F@|APH@D?l@HL@JB?AD??@r@JJ@F@\\D^D\\DH?l@HNBL@H@?AD@?@pANLB`@DJ@~@L@?D@h@F
   debugpoints2: ccmxEa~wsYXL]nACNRLnAx@DKBBp@f@GL`@Zn@d@RHPFJDR@lACf@GL?|AKx@G?D@NFA@ZG@@XP@pCUXAFCz@CCEVA|@CTC@DD?CKBBTFNALCACLAR?J@XHJFHHHPHN?FDFn@xAXn@LQBHRYBCEGJM@Bh@s@TWnA_BVJ@EXLz@\\hBp@r@Nf@JnDpAnCbAv@T`AXd@R`@HhBh@XFnEjAACHBNFlCr@z@TCJ`@JDIRFr@Rt@RD?|@VzA`@@ABBdCp@FA?BhALLBN@fAN^DDAbANt@HDBhBRh@FpDb@NDzC\\^BfAPdBPtAPD?pAPzBXp@H
   resultText: {fileID: 1924500865}
@@ -3955,7 +3954,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 10
+  m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &839879561
 MonoBehaviour:
@@ -6291,7 +6290,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   geo: {fileID: 384014293}
   geodetail: {fileID: 1619348189}
-  api: 259d76f42d584489a81394483c37c981
+  api: 5f52cc5c950a4742ae898d164399200e
   baseURL: https://api.geoapify.com/v2/places?categories=
   catagory: amenity.toilet
   condition: none
@@ -6304,7 +6303,7 @@ MonoBehaviour:
   _conds: 0
   _drop: {fileID: 2100463684}
   _cond: {fileID: 1613670249}
-  useLocation: 1
+  useLocation: 0
   debugging: 0
   nameList: []
   latitudesList: []
@@ -6324,7 +6323,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 8
+  m_RootOrder: 10
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1244743829
 GameObject:
@@ -8303,6 +8302,14 @@ MonoBehaviour:
   _armanager: {fileID: 691323912}
   _anchors: {fileID: 691323910}
   GeospatialAssetPrefab: {fileID: 5831908950388203684, guid: f09a13e3d47394ab588884ffd124d732, type: 3}
+  GeospatialNaviPrefab: {fileID: 5831908950388203684, guid: 7d95fd4e3d3d1764c960cd803afd351d, type: 3}
+  materials:
+  - {fileID: 2100000, guid: 97882ceb70efe7145b2be203130b5dbe, type: 2}
+  - {fileID: 2100000, guid: 81cc6e8e4cc2796429e44435bca9d043, type: 2}
+  - {fileID: 2100000, guid: ff3fcefe0bd59a346a1731cacac192f7, type: 2}
+  - {fileID: 2100000, guid: 6e030c332a766a64284a69cad69ed3cb, type: 2}
+  - {fileID: 2100000, guid: be6d39fe7165e034690439dffb4dfd87, type: 2}
+  - {fileID: 2100000, guid: 20b7a0207382b9847aee7b09bd356538, type: 2}
 --- !u!1 &1636965080
 GameObject:
   m_ObjectHideFlags: 0

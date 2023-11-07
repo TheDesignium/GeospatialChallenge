@@ -17,16 +17,10 @@ using NinevaStudios.GoogleMaps.Internal;
 public class GoogleMapsDemo : MonoBehaviour
 {
 
-	public Geo _geo;
-	public setGPS _gps;
-	public getDistance distance;
 	public directionsPOI poi;
 
 	public bool directions;
-	public bool plusCodes;
-	public bool setOverlay;
 	public GameObject frame;
-	public minimapControl mmc;
 
 #pragma warning disable 0649
 
@@ -342,11 +336,6 @@ public class GoogleMapsDemo : MonoBehaviour
 		Dismiss();
 
 		GoogleMapsView.CreateAndShow(CreateMapViewOptions(), RectTransformToScreenSpace(rect), OnMapReady);
-
-		if(_geo != null)
-		{
-			_geo.nowStart();
-		}
 	}
 
 	void OnMapReady(GoogleMapsView googleMapsView)
@@ -381,27 +370,9 @@ public class GoogleMapsDemo : MonoBehaviour
 		_map.SetOnCameraIdleListener(() => onTouchIdle("Camera is now idle"));
 		_map.SetOnGroundOverlayClickListener(overlay => Debug.Log("Ground overlay clicked: " + overlay));
 
-	/*
-		_map.SetOnMarkerDragListener(
-			marker => Debug.Log("Marker drag start: " + marker),
-			marker => Debug.Log("Marker drag end: " + marker),
-			marker => Debug.Log("Marker drag: " + marker));
-
-		_map.SetOnPolylineClickListener(polyline => Debug.Log("Polyline clicked: " + polyline));
-
-		_map.SetOnCircleClickListener(circle => Debug.Log("Circle clicked: " + circle));
-		_map.SetOnPolylineClickListener(polyline => Debug.Log("Polyline clicked: " + polyline));
-		_map.SetOnPolygonClickListener(polygon => Debug.Log("Polygon clicked: " + polygon));
-		_map.SetOnMarkerClickListener(marker => Debug.Log("Marker clicked: " + marker), false);
-		_map.SetOnGroundOverlayClickListener(overlay => Debug.Log("Ground overlay clicked: " + overlay));
-		_map.SetOnInfoWindowClickListener(marker => Debug.Log("Marker info window clicked: " + marker));
-	*/
-
 		_map.SetOnMapClickListener(point =>
 		{
 			Debug.Log("Map clicked: " + point);
-			//_map.AddMarker(DemoUtils.RandomColorMarkerOptions(point));
-			//_geo.parseSetAnchor(point.ToString());
 
 			if(directions == true)
 			{
@@ -414,27 +385,9 @@ public class GoogleMapsDemo : MonoBehaviour
 		_map.SetOnLongMapClickListener(point =>
 		{
 			Debug.Log("Map long clicked: " + point);
-			//_map.AddCircle(DemoUtils.RandomColorCircleOptions(point));
 		});
 
-		/*
-		// When the map is ready we can start drawing on it
-		AddCircle();
-		AddMarker();
-		AddGroundOverlay();
-		AddPolyline();
-		AddPolygon();
-		AddHeatmap();
-		AddMarkerCluster();
-
-		AddOtherExampleOverlays();
-		*/
 		Debug.Log("Map is ready: " + _map);
-
-		if(mmc != null)
-		{
-			mmc.mapOff();
-		}
 	}
 
 	void onTouch(string marker)
@@ -1181,7 +1134,6 @@ public class GoogleMapsDemo : MonoBehaviour
 	{
 		LatLng point = new LatLng(_lat, _lng);
 		_map.AddMarker(DemoUtils.RandomColorMarkerOptions(point));
-		//_geo.parseSetAnchor(point.ToString());
 	}
 
 	public void setLatLng(LatLng point)

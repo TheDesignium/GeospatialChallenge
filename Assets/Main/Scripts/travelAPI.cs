@@ -2,13 +2,20 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Networking;
 
+using Unity.Services.RemoteConfig;
+using Unity.Services.Authentication;
+using Unity.Services.Core;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+
+using TMPro;
 
 using Google.XR.ARCoreExtensions.Samples.Geospatial;
 
@@ -17,8 +24,9 @@ public class travelAPI : MonoBehaviour
 
 	public GeospatialController geo;
 	public geoDetail geodetail;
+	public directionsPOI pois;
 
-	public string api = "259d76f42d584489a81394483c37c981";
+	public string api = "5f52cc5c950a4742ae898d164399200e";
 	public string baseURL = "https://api.geoapify.com/v2/places?categories=";
 	public string catagory = "amenity.toilet";
 	public string condition = "none";
@@ -33,9 +41,12 @@ public class travelAPI : MonoBehaviour
 
 	public Dropdown _drop;
 	public Dropdown _cond;
+	public Button resetButton;
 
 	public bool useLocation;
 	public bool debugging;
+	public bool hasChecked;
+	public List<int> haveCheckedList = new List<int>();
 
 	public List<string> nameList = new List<string>();
 	public List<double> latitudesList = new List<double>();
@@ -46,10 +57,43 @@ public class travelAPI : MonoBehaviour
 
 	public GameObject typeButtons;
 
+	public TMP_Text catText;
 
-//https://api.geoapify.com/v2/places?categories=amenity.toilet&filter=circle:139.624549,35.70086,1000&bias=proximity:139.624549,35.70086&limit=20&apiKey=YOUR_API_KEY
-//https://api.geoapify.com/v1/icon/?type=circle&color=red&size=xx-large&icon=toilet&iconType=awesome&noShadow&scaleFactor=2&apiKey=YOUR_API_KEY
-    void Start()
+	public struct userAttributes {}
+	public struct appAttributes {}
+
+/*
+	async Task Start()
+	{
+			if (Utilities.CheckForInternetConnection())
+			{
+					await InitializeRemoteConfigAsync();
+			}
+
+			RemoteConfigService.Instance.FetchCompleted += ApplyRemoteSettings;
+			RemoteConfigService.Instance.FetchConfigs(new userAttributes(), new appAttributes());
+	}
+
+	async Task InitializeRemoteConfigAsync()
+	{
+					// initialize handlers for unity game services
+					await UnityServices.InitializeAsync();
+
+					// remote config requires authentication for managing environment information
+					if (!AuthenticationService.Instance.IsSignedIn)
+					{
+							await AuthenticationService.Instance.SignInAnonymouslyAsync();
+					}
+	}
+
+	void ApplyRemoteSettings(ConfigResponse configResponse)
+	{
+			api = RemoteConfigService.Instance.appConfig.GetString("geoapify");
+			Debug.Log(api);
+	}
+*/
+
+		void Awake()
     {
 			_drop.options.Clear ();
 			string[] TypeNames = System.Enum.GetNames (typeof(Types));
@@ -71,7 +115,6 @@ public class travelAPI : MonoBehaviour
 					_cond.options.Add (new Dropdown.OptionData() {text=_str});
 			}
 
-			//StartCoroutine(getTexture());
     }
 
 
@@ -112,8 +155,6 @@ public class travelAPI : MonoBehaviour
 		{
 			url = baseURL + catagory + "&filter=circle:" + lon + "," + lat + "," + radius + "&bias=proximity:" + lon + "," + lat + "&limit=" + limit + "&apiKey=" + api;
 		}
-
-		Debug.Log(url);
 
 		UnityWebRequest www = UnityWebRequest.Get(url);
 		yield return www.SendWebRequest();
@@ -176,6 +217,9 @@ public class travelAPI : MonoBehaviour
 
       }
 
+		hasChecked = true;
+		haveCheckedList.Add(catindex);
+		resetButton.interactable = true;
 		yield return new WaitForSeconds(1);
 	}
 
@@ -244,42 +288,49 @@ public class travelAPI : MonoBehaviour
 	{
 		string cat = catagory;
 		catindex = i;
-		
+		string label = "";
+
 		if(i == 0)
 		{
 			catagory = "commercial.convenience";
 			cat = "store";
+			label = "Convenience Store";
 		}
 		if(i == 1)
 		{
 			catagory = "amenity.toilet";
 			cat = "toilet";
+			label = "Public Toilet";
 		}
 		if(i == 2)
 		{
 			catagory = "commercial.books";
 			cat = "book";
+			label = "Book Store";
 		}
 		if(i == 3)
 		{
 			catagory = "public_transport.subway";
-			cat = "subway";
+			label = "Subway Station";
 		}
 		if(i == 4)
 		{
 			catagory = "public_transport.bus";
 			cat = "bus";
+			label = "Bus Stop";
 		}
 		if(i == 5)
 		{
 			catagory = "tourism";
 			cat = "landmark";
+			label = "Tourist Attraction";
 		}
 
 		string imgurl = "https://api.geoapify.com/v1/icon/?type=circle&color=red&size=xx-large&icon=" +
 		cat + "&iconType=awesome&noShadow&scaleFactor=2&apiKey=" + api;
 
-		Debug.Log(cat);
+		//Debug.Log(cat);
+		catText.text = label;
 
 		using (UnityWebRequest uwr = UnityWebRequestTexture.GetTexture(imgurl))
 		{
@@ -297,6 +348,16 @@ public class travelAPI : MonoBehaviour
 		}
 
 		typeButtons.SetActive(false);
+
+		hasChecked = true;
+	}
+
+	public void reCheckPOIs()
+	{
+		if(hasChecked == true && !haveCheckedList.Contains(catindex))
+		{
+			pois.recheck();
+		}
 	}
 
 	public enum Types {accommodation,

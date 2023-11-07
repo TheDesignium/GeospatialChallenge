@@ -38,10 +38,10 @@ public class directionsPOI : MonoBehaviour
 	public float latT;
 	public float lonT;
 
-	public List<string> stepsList = new List<string>();
-  public List<string> latList = new List<string>();
-  public List<string> lonList = new List<string>();
-  public List<string> pointsList = new List<string>();
+	//public List<string> stepsList = new List<string>();
+  //public List<string> latList = new List<string>();
+  //public List<string> lonList = new List<string>();
+  //public List<string> pointsList = new List<string>();
 	public List<LatLng> latlngList = new List<LatLng>();
 	public List<LatLng> POIlatlngList = new List<LatLng>();
 
@@ -53,8 +53,8 @@ public class directionsPOI : MonoBehaviour
 
 	List<double> interpolatedLatitudes = new List<double>();
 	List<double> interpolatedLongitudes = new List<double>();
-	List<double> allLatitudes = new List<double>();
-	List<double> allLongitudes = new List<double>();
+	public List<double> allLatitudes = new List<double>();
+	public List<double> allLongitudes = new List<double>();
 
 	List<POIDetails> poiList = new List<POIDetails>();
 
@@ -63,6 +63,7 @@ public class directionsPOI : MonoBehaviour
 	public int poiPoint;
 
 	public bool miniMap;
+	public bool ARNavigation;
 
 	public string debugpoints;
 	public string debugpoints2;
@@ -76,36 +77,6 @@ public class directionsPOI : MonoBehaviour
 				StartCoroutine(GetLocation(false));
 			}
     }
-
-		public void debuglineone()
-		{
-			google.OnClearMapClick();
-			latlngList.Clear();
-			latlngList = DecodePolylinePoints(debugpoints);
-			google.setRoute(latlngList);
-		}
-		public void debuglinetwo()
-		{
-			google.OnClearMapClick();
-			latlngList.Clear();
-			latlngList = DecodePolylinePoints(debugpoints2);
-			google.setRoute(latlngList);
-		}
-
-		public void debuglineoneB()
-		{
-			google.OnClearMapClick();
-			latlngList.Clear();
-			latlngList = Decode(debugpoints);
-			google.setRoute(latlngList);
-		}
-		public void debuglinetwoB()
-		{
-			google.OnClearMapClick();
-			latlngList.Clear();
-			latlngList = Decode(debugpoints2);
-			google.setRoute(latlngList);
-		}
 
 	void Update()
 	{
@@ -121,6 +92,9 @@ public class directionsPOI : MonoBehaviour
 
 	public void startOnTap(double lt, double ln)
 	{
+		details.hasChecked = false;
+		details.haveCheckedList.Clear();
+		details.resetButton.interactable = false;
 		latto = lt.ToString();
 		lonto = ln.ToString();
 		latT = (float)lt;
@@ -129,13 +103,23 @@ public class directionsPOI : MonoBehaviour
 		StartCoroutine(GetLocation(true));
 	}
 
+	public void cleanAll()
+	{
+		StopAllCoroutines();
+		google.OnClearMapClick();
+		geo.clearAll();
+		details.hasChecked = false;
+		details.haveCheckedList.Clear();
+		details.resetButton.interactable = false;
+	}
+
 	IEnumerator checkPOIs()
 	{
 
-		#if !UNITY_EDITOR
+#if !UNITY_EDITOR
 		google.OnClearMapClick();
 		geo.clearAll();
-		#endif
+#endif
 		poiList.Clear();
 		POIlatlngList.Clear();
 		poiPoint = 0;
@@ -233,10 +217,111 @@ public class directionsPOI : MonoBehaviour
 			foreach(LatLng ll in POIlatlngList)
 			{
 				UnityEngine.Debug.Log(ll);
+				geo.setAnchorLatLng(ll, details.catindex);
 #if !UNITY_EDITOR
-				geo.setAnchorLatLng(ll);
 				google.setPOI(ll, details.catindex);
 #endif
+			}
+			//UnityEngine.Debug.Log("closest" + poiList[poiPoint].POI + " " + poiList[poiPoint].routePoint + " " + poiList[poiPoint].distance);
+		}
+		else
+		{
+			UnityEngine.Debug.Log("No POIs within range");
+			StartCoroutine(fadeOutText("No results within range of the route."));
+			loadingUI.SetActive(false);
+		}
+
+		Resources.UnloadUnusedAssets();
+		loadingUI.SetActive(false);
+	}
+
+	public void recheck()
+	{
+		StopCoroutine("recheckPOIs");
+		StartCoroutine("recheckPOIs");
+	}
+
+	IEnumerator recheckPOIs()
+	{
+		loadingUI.SetActive(true);
+
+		long elapsedTime = stopwatch.ElapsedMilliseconds;
+
+		stopwatch = Stopwatch.StartNew();
+
+		yield return details.GetDetails(false);
+
+		stopwatch.Stop();
+		elapsedTime = stopwatch.ElapsedMilliseconds;
+		UnityEngine.Debug.Log("GetDetails completed in " + elapsedTime + " milliseconds.");
+
+		yield return new WaitForEndOfFrame();
+
+		stopwatch = Stopwatch.StartNew();
+
+		yield return new WaitForEndOfFrame();
+
+		if(details.latitudesList.Count() == 0)
+		{
+			UnityEngine.Debug.Log("No POIs");
+			StartCoroutine(fadeOutText("No results found in this area."));
+			loadingUI.SetActive(false);
+			yield break;
+		}
+
+		List<double> detaillatitudesList = new List<double>();
+		List<double> detaillongitudesList = new List<double>();
+		detaillatitudesList = details.latitudesList;
+		detaillongitudesList = details.longitudesList;
+
+		yield return new WaitForEndOfFrame();
+
+		float mindist = 999999999999999f;
+		int poicounter = 0;
+
+		for (int i = 0; i < detaillatitudesList.Count; i++)
+			{
+				for (int o = 0; o < allLatitudes.Count; o++)
+				{
+					float d = distance.CalculateDistance((float)detaillatitudesList[i], (float)allLatitudes[o], (float)detaillongitudesList[i], (float)allLongitudes[o]);
+
+					if(d < POIDistanceLimit)
+					{
+						//UnityEngine.Debug.Log(d);
+						if(d < mindist)
+						{
+							mindist = d;
+							poiPoint = poicounter;
+						}
+						POIDetails poid = new POIDetails();
+						poid.distance = d;
+						poid.routePoint = new LatLng(allLatitudes[o],allLongitudes[o]);
+						poid.POI = new LatLng(detaillatitudesList[i],detaillongitudesList[i]);
+						poiList.Add(poid);
+					}
+					poicounter += 1;
+				}
+				yield return new WaitForEndOfFrame();
+			}
+
+		//UnityEngine.Debug.Log(p.POI);
+
+		if(poiList.Count != 0)
+		{
+			foreach(POIDetails p in poiList)
+			{
+				if(!POIlatlngList.Contains(p.POI))
+				{
+					POIlatlngList.Add(p.POI);
+				}
+			}
+			foreach(LatLng ll in POIlatlngList)
+			{
+				UnityEngine.Debug.Log(ll);
+				geo.setAnchorLatLng(ll, details.catindex);
+	#if !UNITY_EDITOR
+				google.setPOI(ll, details.catindex);
+	#endif
 			}
 			//UnityEngine.Debug.Log("closest" + poiList[poiPoint].POI + " " + poiList[poiPoint].routePoint + " " + poiList[poiPoint].distance);
 		}
@@ -340,8 +425,6 @@ public class directionsPOI : MonoBehaviour
 
 		UnityWebRequest www = UnityWebRequest.Get("https://maps.googleapis.com/maps/api/directions/json?origin=" + fromLat.ToString() + "," + fromLon.ToString() + "&destination=" + toLat.ToString() + "," + toLon.ToString() + "&mode=" + transitMode + "&key=" + api);
 
-//https://maps.googleapis.com/maps/api/directions/json?origin=35.62561463902309,139.71957139851457&destination=35.6023835317904,139.712882302701&mode=walking&key=AIzaSyAPO8FgjmYlLv46fZ2Rs-3i0-UMavaCXM0
-
         yield return www.SendWebRequest();
 
         if (www.isNetworkError)
@@ -350,24 +433,21 @@ public class directionsPOI : MonoBehaviour
         }
 				else
 				{
-            stepsList.Clear();
-            latList.Clear();
-            lonList.Clear();
-            pointsList.Clear();
+            //stepsList.Clear();
+            //latList.Clear();
+            //lonList.Clear();
+            //pointsList.Clear();
 
 						UnityEngine.Debug.Log(www.downloadHandler.text);
 
 						GoogleMapsResponse response = JsonUtility.FromJson<GoogleMapsResponse>(www.downloadHandler.text);
 
             latlngList.Clear();
-            //latlngList = DecodePolylinePoints(pointsList[pointsList.Count() - 1]);
 
-						//latlngList = ExtractLatLngFromSteps(www.downloadHandler.text);
 						latlngList = ExtractAllLatLngSteps(www.downloadHandler.text);
 
 						UnityEngine.Debug.Log(response.routes[0].legs[0].steps.Count());
 
-						//latlngList = DecodePolylinePoints(response.routes[0].overview_polyline);
 						LatLng previousLL = latlngList[0];
 
 						yield return new WaitForEndOfFrame();
@@ -388,6 +468,10 @@ public class directionsPOI : MonoBehaviour
                 {
 									CalculateInterpolatedGPSPointsDoubles(previousLL.Latitude, previousLL.Longitude, latlngList[counter].Latitude, latlngList[counter].Longitude);
    								previousLL = latlngList[counter];
+									if(ARNavigation == true)
+									{
+										geo.setAnchorNavi((float)previousLL.Latitude,(float)previousLL.Longitude);
+									}
                 }
                 else
                 {
@@ -520,31 +604,6 @@ public class directionsPOI : MonoBehaviour
 
 	}
 
-	public List<LatLng> ExtractLatLngFromSteps(string json)
-	{
-			GoogleMapsResponse response = JsonUtility.FromJson<GoogleMapsResponse>(json);
-			List<LatLng> latLngList = new List<LatLng>();
-
-			// Assuming the JSON is correct and there's at least one route and one leg
-			Leg firstLeg = response.routes[0].legs[0];
-
-			foreach (Step step in firstLeg.steps)
-			{
-					// Adding start location of the step
-					LatLng startLatLng = new LatLng(step.start_location.lat, step.start_location.lng);
-					latLngList.Add(startLatLng);
-
-					// Adding end location of the step
-					LatLng endLatLng = new LatLng(step.end_location.lat, step.end_location.lng);
-					latLngList.Add(endLatLng);
-
-					latList.Add(step.start_location.lat.ToString());
-					lonList.Add(step.start_location.lng.ToString());
-			}
-
-			return latLngList;
-	}
-
 	public List<LatLng> ExtractAllLatLngSteps(string json)
 	{
 			GoogleMapsResponse response = JsonUtility.FromJson<GoogleMapsResponse>(json);
@@ -576,14 +635,11 @@ public class directionsPOI : MonoBehaviour
 #if !UNITY_EDITOR
 				 Input.location.Start();
 
-			 // First, check if user has location service enabled
 			 if (!Input.location.isEnabledByUser)
 					 yield break;
 
-			 // Start service before querying location
 			 Input.location.Start();
 
-			 // Wait until service initializes
 			 int maxWait = 20;
 			 while (Input.location.status == LocationServiceStatus.Initializing && maxWait > 0)
 			 {
@@ -591,14 +647,12 @@ public class directionsPOI : MonoBehaviour
 					 maxWait--;
 			 }
 
-			 // Service didn't initialize in 20 seconds
 			 if (maxWait < 1)
 			 {
 					 UnityEngine.Debug.Log("Timed out");
 					 yield break;
 			 }
 
-			 // Connection has failed
 			 if (Input.location.status == LocationServiceStatus.Failed)
 			 {
 					 UnityEngine.Debug.Log("Unable to determine device location");
@@ -624,7 +678,14 @@ public class directionsPOI : MonoBehaviour
 			 }
 #endif
 #if UNITY_EDITOR
-			StartCoroutine(checkPOIs());
+			if(routeRequest == true)
+			{
+				latfrom = latitudeA.ToString();
+				lonfrom = longitudeB.ToString();
+				latF = (float)latitudeA;
+				lonF = (float)longitudeB;
+				StartCoroutine(checkPOIs());
+			}
 #endif
 
 	 }
