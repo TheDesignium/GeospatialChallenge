@@ -1,6 +1,5 @@
 <dependencies>
   <packages>
-    <package>com.google.android.gms:play-services-location:17+</package>
     <package>com.google.android.gms:play-services-maps:18.0.2</package>
     <package>com.google.maps.android:android-maps-utils:0.5</package>
   </packages>
@@ -34,9 +33,7 @@
     <file>Assets/Plugins/Android/androidx.viewpager.viewpager-1.0.0.aar</file>
     <file>Assets/Plugins/Android/com.google.android.gms.play-services-base-18.0.1.aar</file>
     <file>Assets/Plugins/Android/com.google.android.gms.play-services-basement-18.0.0.aar</file>
-    <file>Assets/Plugins/Android/com.google.android.gms.play-services-location-17.1.0.aar</file>
     <file>Assets/Plugins/Android/com.google.android.gms.play-services-maps-18.0.2.aar</file>
-    <file>Assets/Plugins/Android/com.google.android.gms.play-services-places-placereport-17.0.0.aar</file>
     <file>Assets/Plugins/Android/com.google.android.gms.play-services-tasks-18.0.1.aar</file>
     <file>Assets/Plugins/Android/com.google.maps.android.android-maps-utils-0.5.aar</file>
   </files>

@@ -111,7 +111,7 @@ Material:
     - _FADEWAY: 1
     - _FadeIn: 0.16
     - _FadeOut: 0.84
-    - _FadePowerAtBothEnds: 0.23
+    - _FadePowerAtBothEnds: 1
     - _FadeSlider: 0
     - _FadeableDistance: 1.46
     - _FaderLength: 0
@@ -124,7 +124,7 @@ Material:
     - _InvertFade: 0
     - _IsUseFarFade: 1
     - _Length: 0.2
-    - _LengthOfFadeAtBothEnds: 2
+    - _LengthOfFadeAtBothEnds: 1
     - _LerpMax: 0.088
     - _Metallic: 0
     - _OcclusionStrength: 1

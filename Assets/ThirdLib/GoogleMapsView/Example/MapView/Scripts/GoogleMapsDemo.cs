@@ -21,6 +21,7 @@ public class GoogleMapsDemo : MonoBehaviour
 
 	public bool directions;
 	public GameObject frame;
+	public Color panelColour;
 
 #pragma warning disable 0649
 
@@ -110,8 +111,8 @@ public class GoogleMapsDemo : MonoBehaviour
 
 	#region snapshot
 
-	[Header("Map snapshot")] public RawImage snapshotImage;
-
+	[Header("Map snapshot")] public Image snapshotImage;
+	public Image frameImage;
 	#endregion
 
 	public RectTransform rect;
@@ -262,7 +263,7 @@ public class GoogleMapsDemo : MonoBehaviour
 		}
 
 		var polyline = _map.AddPolyline(CreateRoutePolylineOptions(lllist));
-		const int zoom = 16;
+		//const int zoom = 16;
 		//AnimateCamera(CameraUpdate.NewLatLngZoom(lllist[0], zoom));
 		//Debug.Log(_map.getBounds());
 	}
@@ -484,14 +485,17 @@ public class GoogleMapsDemo : MonoBehaviour
 		}
 
 		options.AmbientEnabled(ambientToggle.isOn);
-		options.CompassEnabled(compassToggle.isOn);
+		//options.CompassEnabled(compassToggle.isOn);
+		options.CompassEnabled(false);
 		options.LiteMode(liteModeToggle.isOn);
-		options.MapToolbarEnabled(mapToolbarToggle.isOn);
+		//options.MapToolbarEnabled(mapToolbarToggle.isOn);
+		options.MapToolbarEnabled(false);
 		options.RotateGesturesEnabled(rotateGesturesToggle.isOn);
 		options.ScrollGesturesEnabled(scrollGesturesToggle.isOn);
 		options.TiltGesturesEnabled(tiltGesturesToggle.isOn);
 		options.ZoomGesturesEnabled(zoomGesturesToggle.isOn);
-		options.ZoomControlsEnabled(zoomControlsToggle.isOn);
+		//options.ZoomControlsEnabled(zoomControlsToggle.isOn);
+		options.ZoomControlsEnabled(false);
 
 		options.MinZoomPreference(float.Parse(minZoom.text));
 		options.MaxZoomPreference(float.Parse(maxZoom.text));
@@ -1091,7 +1095,7 @@ public class GoogleMapsDemo : MonoBehaviour
 		_map?.TakeSnapshot(texture =>
 		{
 			Debug.Log("Snapshot captured: " + texture.width + " x " + texture.height);
-			snapshotImage.GetComponent<Image>().sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.zero);
+			snapshotImage.sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.zero);
 		});
 	}
 
@@ -1146,6 +1150,23 @@ public class GoogleMapsDemo : MonoBehaviour
 		_map.AddMarker(DemoUtils.CreateTexture2DMarker(point, icons[icn]));
 	}
 
+	bool mapout = true;
+	public bool fadedIn;
+
+	public void altToggle()
+	{
+		if(mapout == true)
+		{
+			screenShot();
+			mapout = false;
+		}
+		else if(mapout == false)
+		{
+			screenShow();
+			mapout = true;
+		}
+	}
+
 	public void screenShot()
 	{
 		StartCoroutine(screenGrab());
@@ -1159,6 +1180,9 @@ public class GoogleMapsDemo : MonoBehaviour
 		{
 			_map.IsVisible = false;
 		}
+		//ani.Play("hidemapBottom",0,0);
+		StopCoroutine("fadeOutPanel");
+		StartCoroutine("fadeOutPanel");
 	}
 
 	IEnumerator grabTexture()
@@ -1166,7 +1190,80 @@ public class GoogleMapsDemo : MonoBehaviour
 		yield return new WaitForEndOfFrame();
 		_map?.TakeSnapshot(texture =>
 		{
-			snapshotImage.GetComponent<RawImage>().texture = texture;
+			snapshotImage.sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.zero);
 		});
+	}
+
+	public void screenShow()
+	{
+		StartCoroutine(screenShowNow());
+	}
+
+	IEnumerator screenShowNow()
+	{
+		//ani.Play("showmapBottom",0,0);
+		StopCoroutine("fadeInPanel");
+		StartCoroutine("fadeInPanel");
+		yield return new WaitForSeconds(1.3f);
+		//yield return new WaitForSeconds(2f);
+		if(_map != null)
+		{
+			_map.IsVisible = true;
+		}
+	}
+
+	IEnumerator fadeInPanel()
+	{
+		Debug.Log("fadeInPanel");
+
+		var spin = panelColour;
+		float alph = 0;
+		spin.a = alph;
+		snapshotImage.color = spin;
+		//frameImage.color = spin;
+		yield return new WaitForEndOfFrame();
+		snapshotImage.gameObject.SetActive(true);
+		frameImage.gameObject.SetActive(true);
+		while(alph < 1)
+		{
+			alph = spin.a;
+			alph += 0.03f;
+			spin.a = alph;
+			snapshotImage.color = spin;
+			//frameImage.color = spin;
+			yield return new WaitForEndOfFrame();
+		}
+		yield return new WaitForEndOfFrame();
+		fadedIn = true;
+	}
+
+	IEnumerator fadeOutPanel()
+	{
+		Debug.Log("fadeOutPanel");
+
+		var spin = panelColour;
+		float alph = 1;
+		spin.a = alph;
+		snapshotImage.color = spin;
+		//frameImage.color = spin;
+		yield return new WaitForEndOfFrame();
+		snapshotImage.gameObject.SetActive(true);
+		while(alph > 0)
+		{
+			alph = spin.a;
+			alph -= 0.03f;
+			//alph -= 0.001f;
+
+			spin.a = alph;
+			snapshotImage.color = spin;
+			//frameImage.color = spin;
+			Debug.Log(alph);
+
+			yield return new WaitForEndOfFrame();
+		}
+		yield return new WaitForEndOfFrame();
+		snapshotImage.gameObject.SetActive(false);
+		frameImage.gameObject.SetActive(false);
+		fadedIn = false;
 	}
 }

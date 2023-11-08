@@ -38,10 +38,6 @@ public class directionsPOI : MonoBehaviour
 	public float latT;
 	public float lonT;
 
-	//public List<string> stepsList = new List<string>();
-  //public List<string> latList = new List<string>();
-  //public List<string> lonList = new List<string>();
-  //public List<string> pointsList = new List<string>();
 	public List<LatLng> latlngList = new List<LatLng>();
 	public List<LatLng> POIlatlngList = new List<LatLng>();
 
@@ -64,9 +60,6 @@ public class directionsPOI : MonoBehaviour
 
 	public bool miniMap;
 	public bool ARNavigation;
-
-	public string debugpoints;
-	public string debugpoints2;
 
 	public TMP_Text resultText;
 
@@ -427,7 +420,7 @@ public class directionsPOI : MonoBehaviour
 
         yield return www.SendWebRequest();
 
-        if (www.isNetworkError)
+        if (www.result == UnityWebRequest.Result.ConnectionError)
 				{
             UnityEngine.Debug.Log(www.error);
         }
@@ -542,7 +535,7 @@ public class directionsPOI : MonoBehaviour
         }
         catch (Exception ex)
         {
-            // logo it
+            UnityEngine.Debug.Log(ex);
         }
         return poly;
    }

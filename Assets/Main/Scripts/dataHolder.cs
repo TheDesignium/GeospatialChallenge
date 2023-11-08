@@ -8,7 +8,7 @@ using TMPro;
 public class dataHolder : MonoBehaviour
 {
 
-    public string name;
+    public string thename;
     public TMP_Text thetext;
 
     void Awake()

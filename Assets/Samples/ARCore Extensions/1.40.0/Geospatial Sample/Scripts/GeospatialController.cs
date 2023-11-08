@@ -189,11 +189,6 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
         private const double _horizontalAccuracyThreshold = 20;
 
         /// <summary>
-        /// Determines if the anchor settings panel is visible in the UI.
-        /// </summary>
-        private bool _showAnchorSettingsPanel = false;
-
-        /// <summary>
         /// Represents the current anchor type of the anchor being placed in the scene.
         /// </summary>
         public AnchorType _anchorType = AnchorType.Geospatial;
@@ -243,10 +238,8 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
         private bool _isReturning = false;
         private bool _isLocalizing = false;
         private bool _enablingGeospatial = false;
-        private bool _shouldResolvingHistory = false;
         private float _localizationPassedTime = 0f;
         private float _configurePrepareTime = 3f;
-        private GeospatialAnchorHistoryCollection _historyCollection = null;
         private List<GameObject> _anchorObjects = new List<GameObject>();
         private IEnumerator _startLocationService = null;
         private IEnumerator _asyncCheck = null;
@@ -1118,86 +1111,5 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
                     "Failed to set a {0} anchor!", _anchorType);
         }
 
-        public void placePlace(string name, string latlng)
-        {
-          double lat = 0;
-          double lng = 0;
-          TryParseLatLon(latlng, out lat, out lng);
-          Quaternion eunRotation = Quaternion.identity;
-          GeospatialAnchorHistory history = new GeospatialAnchorHistory(lat,lng,0,_anchorType,eunRotation);
-          //var anchor = AnchorManager.ResolveAnchorOnTerrain(history);
-          var anchor = AnchorManager.ResolveAnchorOnTerrain(lat,lng, 0, eunRotation);
-  #if !UNITY_EDITOR
-          //var anchor = PlaceGeospatialAnchorManual(history);
-          if (anchor != null)
-          {
-              GameObject anchorGO = Instantiate(GeospatialPrefab, anchor.transform);
-              anchorGO.name = name;
-              anchorGO.transform.parent = anchor.gameObject.transform;
-              _anchorObjects.Add(anchor.gameObject);
-              dataHolder data = anchorGO.GetComponent<dataHolder>();
-              data.name = name;
-              data.thetext.text = name;
-              Debug.Log("Set Anchor: " + lat + "," + lng);
-          }
-          else
-          {
-              Debug.Log("Set Anchor failed");
-          }
-  #endif
-  #if UNITY_EDITOR
-          Vector3 v3 = new Vector3(UnityEngine.Random.Range(-10,10),0,UnityEngine.Random.Range(5,20));
-          GameObject anchorGO = Instantiate(GeospatialPrefab, v3,eunRotation);
-          _anchorObjects.Add(anchorGO);
-          dataHolder data = anchorGO.GetComponent<dataHolder>();
-          data.name = name;
-          data.thetext.text = name;
-          anchorGO.name = name;
-  #endif
-
-        }
-
-        private ARGeospatialAnchor PlaceGeospatialAnchorManual(
-            GeospatialAnchorHistory history)
-        {
-          Quaternion eunRotation = Quaternion.identity;
-            ARGeospatialAnchor anchor = null;
-
-            if (history.AnchorType == AnchorType.Terrain)
-            {
-                ResolveAnchorOnTerrainPromise promise =
-                    AnchorManager.ResolveAnchorOnTerrainAsync(
-                        history.Latitude, history.Longitude,
-                        0, eunRotation);
-
-                StartCoroutine(CheckTerrainPromise(promise, history));
-                return null;
-            }
-            else
-            {
-                anchor = AnchorManager.AddAnchor(
-                    history.Latitude, history.Longitude, history.Altitude, eunRotation);
-            }
-
-            return anchor;
-        }
-
-        public static bool TryParseLatLon(string input, out double latitude, out double longitude)
-        {
-            latitude = 0.0;
-            longitude = 0.0;
-
-            Match match = Regex.Match(input, @"\((-?\d+(\.\d+)?),(-?\d+(\.\d+)?)\)");
-
-            if (match.Success && match.Groups.Count >= 5)
-            {
-                if (double.TryParse(match.Groups[1].Value, out latitude) && double.TryParse(match.Groups[3].Value, out longitude))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
     }
 }

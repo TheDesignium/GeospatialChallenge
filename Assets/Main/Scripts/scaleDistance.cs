@@ -10,26 +10,26 @@ public class scaleDistance : MonoBehaviour
 
   public TMP_Text thetext;
   public float sizeOnScreen;
-  public Camera camera;
+  public Camera thecamera;
 
     void Start()
     {
-      if(camera == null)
+      if(thecamera == null)
       {
-        camera = Camera.main;
+        thecamera = Camera.main;
       }
     }
 
     void Update () {
-        Vector3 a = camera.WorldToScreenPoint(transform.position);
+        Vector3 a = thecamera.WorldToScreenPoint(transform.position);
         Vector3 b = new Vector3(a.x, a.y + sizeOnScreen, a.z);
 
-        Vector3 aa = camera.ScreenToWorldPoint(a);
-        Vector3 bb = camera.ScreenToWorldPoint(b);
+        Vector3 aa = thecamera.ScreenToWorldPoint(a);
+        Vector3 bb = thecamera.ScreenToWorldPoint(b);
 
         transform.localScale = Vector3.one * (aa - bb).magnitude;
 
-        float total_dist = Vector3.Distance(camera.transform.position,transform.position);
+        float total_dist = Vector3.Distance(thecamera.transform.position,transform.position);
 
         if(thetext != null)
         {

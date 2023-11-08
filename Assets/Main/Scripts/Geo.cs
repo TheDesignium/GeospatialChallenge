@@ -23,7 +23,6 @@ public class Geo : MonoBehaviour
     public AREarthManager _armanager;
     public ARAnchorManager _anchors;
     public GeospatialController geoControl;
-  	public setGPS gps;
 
     EarthState EarthState;
 
@@ -83,62 +82,6 @@ public class Geo : MonoBehaviour
 
     }
 
-    public void checkPosition()
-    {
-      var _a = _armanager.IsGeospatialModeSupported(GeospatialMode.Enabled);
-
-      Debug.Log(_a);
-
-      var _b = _armanager.EarthState;
-
-      Debug.Log(_b);
-
-      var _c = _armanager.CameraGeospatialPose;
-
-      Debug.Log(_c);
-
-      var earthTrackingState = _armanager.EarthTrackingState;
-
-      Debug.Log(earthTrackingState);
-
-      if (earthTrackingState == TrackingState.Tracking)
-      {
-         // Values obtained by the Geospatial API are valid as long as
-         // earthTrackingState is TrackingState.Tracking.
-         // Use Geospatial APIs in this block.
-         var cameraGeospatialPose = _armanager.CameraGeospatialPose;
-         Debug.Log("Altitude: " + cameraGeospatialPose.Altitude);
-         Debug.Log("Heading: " + cameraGeospatialPose.Heading);
-         Debug.Log("HeadingAccuracy: " + cameraGeospatialPose.HeadingAccuracy);
-         Debug.Log("HorizontalAccuracy: " + cameraGeospatialPose.HorizontalAccuracy);
-         Debug.Log("Latitude: " + cameraGeospatialPose.Latitude);
-         Debug.Log("Longitude: " + cameraGeospatialPose.Longitude);
-         Debug.Log("VerticalAccuracy: " + cameraGeospatialPose.VerticalAccuracy);
-
-         /*
-         Altitude
-         double
-         Altitude of the pose in meters above the WGS 84 ellipsoid.
-         Heading
-         double
-         Heading of the pose in degrees.
-         HeadingAccuracy
-         double
-         Estimated heading accuracy in degrees.
-         HorizontalAccuracy
-         double
-         Estimated horizontal accuracy in meters with respect to latitude and longitude.
-         Latitude
-         double
-         Latitude of the pose in degrees.
-         Longitude
-         double
-         Longitude of the pose in degrees.
-         VerticalAccuracy
-         */
-      }
-    }
-
     public void startLocation()
     {
       StartCoroutine(GetLocation());
@@ -189,20 +132,6 @@ public class Geo : MonoBehaviour
           }
     }
 
-    public void parseSetAnchor(string _s)
-    {
-      //lat/lng: (35.6195247431566,139.712038747966)
-      string output = _s.Split('(', ')')[1];
-      string lat = output.Remove(output.LastIndexOf(','));
-      string lon = output.Substring(output.LastIndexOf(',') + 1);
-      float _la = 0;
-      float _lo = 0;
-      float.TryParse(lat, out _la);
-      float.TryParse(lon, out _lo);
-      //Debug.Log(_la + "::" + _lo);
-      //geoControl.OnMapViewClicked(theprefab, _la, _lo);
-    }
-
     public void setAnchor(float latitude, float longitude)
     {
       var earthTrackingState = _armanager.EarthTrackingState;
@@ -215,13 +144,9 @@ public class Geo : MonoBehaviour
 
       if (earthTrackingState == TrackingState.Tracking)
       {
-        Quaternion quaternion =
-                Quaternion.AngleAxis(180f - (float)pose.Heading, Vector3.up);
-
-        GeospatialPose _gsp = new GeospatialPose();
+        Quaternion quaternion = Quaternion.identity;
 
         var altitude = pose.Altitude - 1;
-        //var altitude = 10;
 
         var anchor =
             _anchors.AddAnchor(
@@ -230,72 +155,19 @@ public class Geo : MonoBehaviour
                 altitude,
                 quaternion);
         var anchoredAsset = Instantiate(GeospatialAssetPrefab, anchor.transform);
-
-        Debug.Log("Anchor at " + latitude + "," + longitude + "," + altitude);
-      }
-    }
-
-    public void setPrefab(int _i)
-    {
-      Debug.Log(_i);
-      GeospatialAssetPrefab = GeospatialAssetPrefabs[_i];
-    }
-
-    public void setAnchorAPI(float latitude, float longitude, string name, string rating, string icon, string photo)
-    {
-      var earthTrackingState = _armanager.EarthTrackingState;
-
-      //Debug.Log(earthTrackingState);
-
-      var pose = _armanager.CameraGeospatialPose;
-
-      //Debug.Log(pose);
-
-      if (earthTrackingState == TrackingState.Tracking)
-      {
-        Quaternion quaternion =
-                Quaternion.AngleAxis(180f - (float)pose.Heading, Vector3.up);
-
-        GeospatialPose _gsp = new GeospatialPose();
-
-        var altitude = pose.Altitude - 1;
-        //var altitude = 10;
-
-        var anchor =
-            _anchors.AddAnchor(
-                latitude,
-                longitude,
-                altitude,
-                quaternion);
-        var anchoredAsset = Instantiate(APIGeospatialAssetPrefab, anchor.transform);
-
-        anchoredAsset.GetComponent<positionInformation>().setUp(name, rating, icon, photo);
-
-        //Debug.Log("Anchor at " + latitude + "," + longitude + "," + altitude);
-
-        objects.Add(anchoredAsset);
-
-        if(makeAnchorParent == true)
-        {
-          anchoredAsset.transform.parent = anchor.transform;
-          var debugObject = Instantiate(debugPrefab, anchor.transform);
-          objects.Add(debugObject);
-        }
       }
     }
 
 	public void setAnchorDebug(float latitude, float longitude, string name, string rating, string icon, string photo)
     {
-		Vector3 v3 = new Vector3(UnityEngine.Random.Range(-10,10),0,UnityEngine.Random.Range(-10,10));
-		var anchoredAsset = Instantiate(APIGeospatialAssetPrefab, v3, transform.rotation);
-        anchoredAsset.GetComponent<positionInformation>().setUp(name, rating, icon, photo);
-	}
+		    Vector3 v3 = new Vector3(UnityEngine.Random.Range(-10,10),0,UnityEngine.Random.Range(-10,10));
+		    var anchoredAsset = Instantiate(APIGeospatialAssetPrefab, v3, transform.rotation);
+	  }
 
     public void clearAnchors()
     {
       foreach(GameObject _g in objects)
       {
-        //_g.SetActive(false);
         Destroy(_g);
       }
       objects.Clear();
@@ -330,10 +202,6 @@ public class Geo : MonoBehaviour
           look.thePlayer = anchoredAsset.transform;
         }
         look = anchoredAsset.transform.GetChild(0).GetComponent<lookAt>();
-        if(useAddress == true)
-        {
-          anchoredAsset.transform.GetChild(0).GetComponent<setAddress>().googleGeocode(latitude,longitude);
-        }
       }
       else
       {
@@ -350,12 +218,7 @@ public class Geo : MonoBehaviour
           look.thePlayer = anchoredAsset.transform;
         }
         look = anchoredAsset.transform.GetChild(0).GetComponent<lookAt>();
-        if(useAddress == true)
-        {
-          anchoredAsset.transform.GetChild(0).GetComponent<setAddress>().googleGeocode(latitude,longitude);
-        }
       }
 		}
-
-    }
+  }
 }
