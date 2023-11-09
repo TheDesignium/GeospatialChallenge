@@ -33,7 +33,13 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
 #if UNITY_ANDROID
 
     using UnityEngine.Android;
+
 #endif
+
+using TMPro;
+
+using GoogleTextToSpeech.Scripts.Example;
+
 
     /// <summary>
     /// Controller for Geospatial sample.
@@ -42,257 +48,80 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
         Justification = "Bypass source check.")]
     public class GeospatialController : MonoBehaviour
     {
+        public TextToSpeechExample text2speech;
+        public SquareAPI square;
+
         [Header("AR Components")]
+		public GameObject loadingObject;
 
-        /// <summary>
-        /// The ARSessionOrigin used in the sample.
-        /// </summary>
+        public bool debugging;
+        public bool checkPosition;
+        public bool texttospeech;
+
+    	public Image debugimg;
+    	public Gradient gradient;
+    	public TMP_Text debugTxt;
+        public TMP_Text distanceTxt;
+        public getDistance distance;
+        public setGPS gps;
+
+        double firstlat;
+        double firstlon;
+        double oldlat;
+        double oldlon;
+        double oldlatInput;
+        double oldlonInput;
+        double lastDistance;
+
+        public bool squareReady;
+
         public ARSessionOrigin SessionOrigin;
-
-        /// <summary>
-        /// The ARSession used in the sample.
-        /// </summary>
         public ARSession Session;
-
-        /// <summary>
-        /// The ARAnchorManager used in the sample.
-        /// </summary>
         public ARAnchorManager AnchorManager;
-
-        /// <summary>
-        /// The ARRaycastManager used in the sample.
-        /// </summary>
-        public ARRaycastManager RaycastManager;
-
-        /// <summary>
-        /// The AREarthManager used in the sample.
-        /// </summary>
         public AREarthManager EarthManager;
 
-        /// <summary>
-        /// The ARStreetscapeGeometryManager used in the sample.
-        /// </summary>
         public ARStreetscapeGeometryManager StreetscapeGeometryManager;
-
-        /// <summary>
-        /// The ARCoreExtensions used in the sample.
-        /// </summary>
         public ARCoreExtensions ARCoreExtensions;
-
-        /// <summary>
-        /// The StreetscapeGeometry materials for rendering geometry building meshes.
-        /// </summary>
         public List<Material> StreetscapeGeometryMaterialBuilding;
-
-        /// <summary>
-        /// The StreetscapeGeometry material for rendering geometry terrain meshes.
-        /// </summary>
         public Material StreetscapeGeometryMaterialTerrain;
 
-        [Header("UI Elements")]
-
-        /// <summary>
-        /// A 3D object that presents a Geospatial Anchor.
-        /// </summary>
         public GameObject GeospatialPrefab;
-
-        /// <summary>
-        /// A 3D object that presents a Geospatial Terrain anchor.
-        /// </summary>
         public GameObject TerrainPrefab;
 
-        /// <summary>
-        /// UI element showing privacy prompt.
-        /// </summary>
-        public GameObject PrivacyPromptCanvas;
-
-        /// <summary>
-        /// UI element showing VPS availability notification.
-        /// </summary>
-        public GameObject VPSCheckCanvas;
-
-        /// <summary>
-        /// UI element containing all AR view contents.
-        /// </summary>
-        public GameObject ARViewCanvas;
-
-        /// <summary>
-        /// UI element for clearing all anchors, including history.
-        /// </summary>
-        public Button ClearAllButton;
-
-        /// <summary>
-        /// UI element that enables streetscape geometry visibility.
-        /// </summary>
-        public Toggle GeometryToggle;
-
-        /// <summary>
-        /// UI element to display or hide the Anchor Settings panel.
-        /// </summary>
-        public Button AnchorSettingButton;
-
-        /// <summary>
-        /// UI element for the Anchor Settings panel.
-        /// </summary>
-        public GameObject AnchorSettingPanel;
-
-        /// <summary>
-        /// UI element that toggles anchor type to Geometry.
-        /// </summary>
-        public Toggle GeospatialAnchorToggle;
-
-        /// <summary>
-        /// UI element that toggles anchor type to Terrain.
-        /// </summary>
-        public Toggle TerrainAnchorToggle;
-
-        /// <summary>
-        /// UI element that toggles anchor type to Rooftop.
-        /// </summary>
-        public Toggle RooftopAnchorToggle;
-
-        /// <summary>
-        /// UI element to display information at runtime.
-        /// </summary>
-        public GameObject InfoPanel;
-
-        /// <summary>
-        /// Text displaying <see cref="GeospatialPose"/> information at runtime.
-        /// </summary>
-        public Text InfoText;
-
-        /// <summary>
-        /// Text displaying in a snack bar at the bottom of the screen.
-        /// </summary>
         public Text SnackBarText;
-
-        /// <summary>
-        /// Text displaying debug information, only activated in debug build.
-        /// </summary>
         public Text DebugText;
 
-        /// <summary>
-        /// Help message shown while localizing.
-        /// </summary>
         private const string _localizingMessage = "Localizing your device to set anchor.";
-
-        /// <summary>
-        /// Help message shown while initializing Geospatial functionalities.
-        /// </summary>
         private const string _localizationInitializingMessage =
             "Initializing Geospatial functionalities.";
-
-        /// <summary>
-        /// Help message shown when <see cref="AREarthManager.EarthTrackingState"/> is not tracking
-        /// or the pose accuracies are beyond thresholds.
-        /// </summary>
         private const string _localizationInstructionMessage =
             "Point your camera at buildings, stores, and signs near you.";
-
-        /// <summary>
-        /// Help message shown when location fails or hits timeout.
-        /// </summary>
         private const string _localizationFailureMessage =
             "Localization not possible.\n" +
             "Close and open the app to restart the session.";
-
-        /// <summary>
-        /// Help message shown when localization is completed.
-        /// </summary>
         private const string _localizationSuccessMessage = "Localization completed.";
-
-        /// <summary>
-        /// The timeout period waiting for localization to be completed.
-        /// </summary>
-        private const float _timeoutSeconds = 180;
-
-        /// <summary>
-        /// Indicates how long a information text will display on the screen before terminating.
-        /// </summary>
-        private const float _errorDisplaySeconds = 3;
-
-        /// <summary>
-        /// The key name used in PlayerPrefs which indicates whether the privacy prompt has
-        /// displayed at least one time.
-        /// </summary>
+        private const string _resolvingTimeoutMessage =
+            "Still resolving the terrain anchor.\n" +
+            "Please make sure you're in an area that has VPS coverage.";
         private const string _hasDisplayedPrivacyPromptKey = "HasDisplayedGeospatialPrivacyPrompt";
-
-        /// <summary>
-        /// The key name used in PlayerPrefs which stores geospatial anchor history data.
-        /// The earliest one will be deleted once it hits storage limit.
-        /// </summary>
         private const string _persistentGeospatialAnchorsStorageKey = "PersistentGeospatialAnchors";
 
-        /// <summary>
-        /// The limitation of how many Geospatial Anchors can be stored in local storage.
-        /// </summary>
-        private const int _storageLimit = 20;
-
-        /// <summary>
-        /// Accuracy threshold for orientation yaw accuracy in degrees that can be treated as
-        /// localization completed.
-        /// </summary>
         private const double _orientationYawAccuracyThreshold = 25;
-
-        /// <summary>
-        /// Accuracy threshold for heading degree that can be treated as localization completed.
-        /// </summary>
         private const double _headingAccuracyThreshold = 25;
-
-        /// <summary>
-        /// Accuracy threshold for altitude and longitude that can be treated as localization
-        /// completed.
-        /// </summary>
         private const double _horizontalAccuracyThreshold = 20;
 
-        /// <summary>
-        /// Determines if the anchor settings panel is visible in the UI.
-        /// </summary>
-        private bool _showAnchorSettingsPanel = false;
-
-        /// <summary>
-        /// Represents the current anchor type of the anchor being placed in the scene.
-        /// </summary>
-        private AnchorType _anchorType = AnchorType.Geospatial;
-
-        /// <summary>
-        /// Determines if streetscape geometry is rendered in the scene.
-        /// </summary>
         private bool _streetscapeGeometryVisibility = false;
-
-        /// <summary>
-        /// Determines which building material will be used for the current building mesh.
-        /// </summary>
+        private AnchorType _anchorType = AnchorType.Geospatial;
         private int _buildingMatIndex = 0;
 
-        /// <summary>
-        /// Dictionary of streetscapegeometry handles to render objects for rendering
-        /// streetscapegeometry meshes.
-        /// </summary>
         private Dictionary<TrackableId, GameObject> _streetscapegeometryGOs =
             new Dictionary<TrackableId, GameObject>();
-
-        /// <summary>
-        /// ARStreetscapeGeometries added in the last Unity Update.
-        /// </summary>
-        List<ARStreetscapeGeometry> _addedStreetscapeGeometries =
+        List<ARStreetscapeGeometry> _addedStreetscapeGeometrys = new List<ARStreetscapeGeometry>();
+        List<ARStreetscapeGeometry> _updatedStreetscapeGeometrys =
+            new List<ARStreetscapeGeometry>();
+        List<ARStreetscapeGeometry> _removedStreetscapeGeometrys =
             new List<ARStreetscapeGeometry>();
 
-        /// <summary>
-        /// ARStreetscapeGeometries updated in the last Unity Update.
-        /// </summary>
-        List<ARStreetscapeGeometry> _updatedStreetscapeGeometries =
-            new List<ARStreetscapeGeometry>();
-
-        /// <summary>
-        /// ARStreetscapeGeometries removed in the last Unity Update.
-        /// </summary>
-        List<ARStreetscapeGeometry> _removedStreetscapeGeometries =
-            new List<ARStreetscapeGeometry>();
-
-        /// <summary>
-        /// Determines if streetscape geometry should be removed from the scene.
-        /// </summary>
         private bool _clearStreetscapeGeometryRenderObjects = false;
 
         private bool _waitingForLocationService = false;
@@ -303,33 +132,26 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
         private bool _shouldResolvingHistory = false;
         private float _localizationPassedTime = 0f;
         private float _configurePrepareTime = 3f;
-        private GeospatialAnchorHistoryCollection _historyCollection = null;
-        private List<GameObject> _anchorObjects = new List<GameObject>();
+        public List<GameObject> _anchorObjects = new List<GameObject>();
         private IEnumerator _startLocationService = null;
         private IEnumerator _asyncCheck = null;
 
-        /// <summary>
-        /// Callback handling "Get Started" button click event in Privacy Prompt.
-        /// </summary>
+        //public GeospatialAnchorHistory _autosetA;
+        public Transform[] mapSize;
+
+        void Start()
+        {
+			distanceTxt.text = "0m";
+        }
+
         public void OnGetStartedClicked()
         {
             PlayerPrefs.SetInt(_hasDisplayedPrivacyPromptKey, 1);
             PlayerPrefs.Save();
             SwitchToARView(true);
+			      loadingObject.SetActive(true);
         }
 
-        /// <summary>
-        /// Callback handling "Learn More" Button click event in Privacy Prompt.
-        /// </summary>
-        public void OnLearnMoreClicked()
-        {
-            Application.OpenURL(
-                "https://developers.google.com/ar/data-privacy");
-        }
-
-        /// <summary>
-        /// Callback handling "Clear All" button click event in AR View.
-        /// </summary>
         public void OnClearAllClicked()
         {
             foreach (var anchor in _anchorObjects)
@@ -338,24 +160,8 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
             }
 
             _anchorObjects.Clear();
-            _historyCollection.Collection.Clear();
-            SnackBarText.text = "Anchor(s) cleared!";
-            ClearAllButton.gameObject.SetActive(false);
-            SaveGeospatialAnchorHistory();
         }
 
-        /// <summary>
-        /// Callback handling "Continue" button click event in AR View.
-        /// </summary>
-        public void OnContinueClicked()
-        {
-            VPSCheckCanvas.SetActive(false);
-        }
-
-        /// <summary>
-        /// Callback handling "Geometry" toggle event in AR View.
-        /// </summary>
-        /// <param name="enabled">Whether to enable Streetscape Geometry visibility.</param>
         public void OnGeometryToggled(bool enabled)
         {
             _streetscapeGeometryVisibility = enabled;
@@ -365,58 +171,24 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
             }
         }
 
-        /// <summary>
-        /// Callback handling the  "Anchor Setting" panel display or hide event in AR View.
-        /// </summary>
-        public void OnAnchorSettingButtonClicked()
-        {
-            _showAnchorSettingsPanel = !_showAnchorSettingsPanel;
-            if (_showAnchorSettingsPanel)
-            {
-                SetAnchorPanelState(true);
-            }
-            else
-            {
-                SetAnchorPanelState(false);
-            }
-        }
-
-        /// <summary>
-        /// Callback handling Geospatial anchor toggle event in AR View.
-        /// </summary>
-        /// <param name="enabled">Whether to enable Geospatial anchors.</param>
         public void OnGeospatialAnchorToggled(bool enabled)
         {
             // GeospatialAnchorToggle.GetComponent<Toggle>().isOn = true;;
             _anchorType = AnchorType.Geospatial;
-            SetAnchorPanelState(false);
         }
 
-        /// <summary>
-        /// Callback handling Terrain anchor toggle event in AR View.
-        /// </summary>
-        /// <param name="enabled">Whether to enable Terrain anchors.</param>
         public void OnTerrainAnchorToggled(bool enabled)
         {
             // TerrainAnchorToggle.GetComponent<Toggle>().isOn = true;
             _anchorType = AnchorType.Terrain;
-            SetAnchorPanelState(false);
         }
 
-        /// <summary>
-        /// Callback handling Rooftop anchor toggle event in AR View.
-        /// </summary>
-        /// <param name="enabled">Whether to enable Rooftop anchors.</param>
         public void OnRooftopAnchorToggled(bool enabled)
         {
             // RooftopAnchorToggle.GetComponent<Toggle>().isOn = true;
             _anchorType = AnchorType.Rooftop;
-            SetAnchorPanelState(false);
         }
 
-        /// <summary>
-        /// Unity's Awake() method.
-        /// </summary>
         public void Awake()
         {
             // Lock screen to portrait.
@@ -424,26 +196,7 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
             Screen.autorotateToLandscapeRight = false;
             Screen.autorotateToPortraitUpsideDown = false;
             Screen.orientation = ScreenOrientation.Portrait;
-
-            // Enable geospatial sample to target 60fps camera capture frame rate
-            // on supported devices.
-            // Note, Application.targetFrameRate is ignored when QualitySettings.vSyncCount != 0.
             Application.targetFrameRate = 60;
-
-            if (SessionOrigin == null)
-            {
-                Debug.LogError("Cannot find ARSessionOrigin.");
-            }
-
-            if (Session == null)
-            {
-                Debug.LogError("Cannot find ARSession.");
-            }
-
-            if (ARCoreExtensions == null)
-            {
-                Debug.LogError("Cannot find ARCoreExtensions.");
-            }
         }
 
         /// <summary>
@@ -456,27 +209,11 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
 
             _isReturning = false;
             _enablingGeospatial = false;
-            InfoPanel.SetActive(false);
-            GeometryToggle.gameObject.SetActive(false);
-            AnchorSettingButton.gameObject.SetActive(false);
-            AnchorSettingPanel.gameObject.SetActive(false);
-            GeospatialAnchorToggle.gameObject.SetActive(false);
-            TerrainAnchorToggle.gameObject.SetActive(false);
-            RooftopAnchorToggle.gameObject.SetActive(false);
-            ClearAllButton.gameObject.SetActive(false);
             DebugText.gameObject.SetActive(Debug.isDebugBuild && EarthManager != null);
-            GeometryToggle.onValueChanged.AddListener(OnGeometryToggled);
-            AnchorSettingButton.onClick.AddListener(OnAnchorSettingButtonClicked);
-            GeospatialAnchorToggle.onValueChanged.AddListener(OnGeospatialAnchorToggled);
-            TerrainAnchorToggle.onValueChanged.AddListener(OnTerrainAnchorToggled);
-            RooftopAnchorToggle.onValueChanged.AddListener(OnRooftopAnchorToggled);
 
             _localizationPassedTime = 0f;
             _isLocalizing = true;
             SnackBarText.text = _localizingMessage;
-
-            LoadGeospatialAnchorHistory();
-            _shouldResolvingHistory = _historyCollection.Collection.Count > 0;
 
             SwitchToARView(PlayerPrefs.HasKey(_hasDisplayedPrivacyPromptKey));
 
@@ -501,16 +238,9 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
                 return;
             }
 
-            // get access to ARstreetscapeGeometries in ARStreetscapeGeometryManager
-            if (StreetscapeGeometryManager)
-            {
-                StreetscapeGeometryManager.StreetscapeGeometriesChanged += GetStreetscapeGeometry;
-            }
+            OnGetStartedClicked();
         }
 
-        /// <summary>
-        /// Unity's OnDisable() method.
-        /// </summary>
         public void OnDisable()
         {
             StopCoroutine(_asyncCheck);
@@ -526,27 +256,26 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
             }
 
             _anchorObjects.Clear();
-            SaveGeospatialAnchorHistory();
-
-            if (StreetscapeGeometryManager)
-            {
-                StreetscapeGeometryManager.StreetscapeGeometriesChanged -=
-                    GetStreetscapeGeometry;
-            }
         }
 
-        /// <summary>
-        /// Unity's Update() method.
-        /// </summary>
         public void Update()
         {
+
+            if(Input.GetKeyUp(KeyCode.Alpha5))
+            {
+              int totalGain = 5;
+              string message = "You have walked " + "5km" + " and earned " + totalGain + " yen, the total balance on your gift card is " + 33.ToString() + " yen";
+              text2speech.remoteRequest(message);
+            }
             if (!_isInARView)
             {
                 return;
             }
 
-            UpdateDebugInfo();
-
+            if(debugging == true)
+      			{
+      				UpdateDebugInfo();
+      			}
             // Check session error status.
             LifecycleUpdate();
             if (_isReturning)
@@ -631,58 +360,60 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
                 {
                     _isLocalizing = true;
                     _localizationPassedTime = 0f;
-                    GeometryToggle.gameObject.SetActive(false);
-                    AnchorSettingButton.gameObject.SetActive(false);
-                    AnchorSettingPanel.gameObject.SetActive(false);
-                    GeospatialAnchorToggle.gameObject.SetActive(false);
-                    TerrainAnchorToggle.gameObject.SetActive(false);
-                    RooftopAnchorToggle.gameObject.SetActive(false);
-                    ClearAllButton.gameObject.SetActive(false);
                     foreach (var go in _anchorObjects)
                     {
                         go.SetActive(false);
                     }
                 }
 
-                if (_localizationPassedTime > _timeoutSeconds)
-                {
-                    Debug.LogError("Geospatial sample localization timed out.");
-                    ReturnWithReason(_localizationFailureMessage);
-                }
-                else
-                {
                     _localizationPassedTime += Time.deltaTime;
                     SnackBarText.text = _localizationInstructionMessage;
-                }
             }
             else if (_isLocalizing)
             {
-                // Finished localization.
                 _isLocalizing = false;
                 _localizationPassedTime = 0f;
-                GeometryToggle.gameObject.SetActive(true);
-                AnchorSettingButton.gameObject.SetActive(true);
-                ClearAllButton.gameObject.SetActive(_anchorObjects.Count > 0);
                 SnackBarText.text = _localizationSuccessMessage;
                 foreach (var go in _anchorObjects)
                 {
                     go.SetActive(true);
                 }
 
-                ResolveHistory();
+				        loadingObject.SetActive(false);
+
+                if(checkPosition == true)
+                {
+                  checkPosition = false;
+                  StartCoroutine("positionLoop");
+                }
             }
             else
             {
                 if (_streetscapeGeometryVisibility)
                 {
+                    // get access to ARstreetscapeGeometries in ARStreetscapeGeometryManager
+                    if (StreetscapeGeometryManager)
+                    {
+                        StreetscapeGeometryManager.StreetscapeGeometriesChanged
+                            += (ARStreetscapeGeometrysChangedEventArgs) =>
+                        {
+                            _addedStreetscapeGeometrys =
+                                ARStreetscapeGeometrysChangedEventArgs.Added;
+                            _updatedStreetscapeGeometrys =
+                                ARStreetscapeGeometrysChangedEventArgs.Updated;
+                            _removedStreetscapeGeometrys =
+                                ARStreetscapeGeometrysChangedEventArgs.Removed;
+                        };
+                    }
+
                     foreach (
-                        ARStreetscapeGeometry streetscapegeometry in _addedStreetscapeGeometries)
+                        ARStreetscapeGeometry streetscapegeometry in _addedStreetscapeGeometrys)
                     {
                         InstantiateRenderObject(streetscapegeometry);
                     }
 
                     foreach (
-                        ARStreetscapeGeometry streetscapegeometry in _updatedStreetscapeGeometries)
+                        ARStreetscapeGeometry streetscapegeometry in _updatedStreetscapeGeometrys)
                     {
                         // This second call to instantiate is required if geometry is toggled on
                         // or off after the app has started.
@@ -691,7 +422,7 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
                     }
 
                     foreach (
-                        ARStreetscapeGeometry streetscapegeometry in _removedStreetscapeGeometries)
+                        ARStreetscapeGeometry streetscapegeometry in _removedStreetscapeGeometrys)
                     {
                         DestroyRenderObject(streetscapegeometry);
                     }
@@ -702,74 +433,18 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
                     _clearStreetscapeGeometryRenderObjects = false;
                 }
 
-                if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began
-                    && !EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId)
-                    && _anchorObjects.Count < _storageLimit)
-                {
-                    // Set anchor on screen tap.
-                    PlaceAnchorByScreenTap(Input.GetTouch(0).position);
-                }
-
-                // Hide anchor settings and toggles if the storage limit has been reached.
-                if (_anchorObjects.Count >= _storageLimit)
-                {
-                    AnchorSettingButton.gameObject.SetActive(false);
-                    AnchorSettingPanel.gameObject.SetActive(false);
-                    GeospatialAnchorToggle.gameObject.SetActive(false);
-                    TerrainAnchorToggle.gameObject.SetActive(false);
-                    RooftopAnchorToggle.gameObject.SetActive(false);
-                }
-                else
-                {
-                    AnchorSettingButton.gameObject.SetActive(true);
-                }
             }
 
-            InfoPanel.SetActive(true);
             if (earthTrackingState == TrackingState.Tracking)
             {
-                InfoText.text = string.Format(
-                "Latitude/Longitude: {1}°, {2}°{0}" +
-                "Horizontal Accuracy: {3}m{0}" +
-                "Altitude: {4}m{0}" +
-                "Vertical Accuracy: {5}m{0}" +
-                "Eun Rotation: {6}{0}" +
-                "Orientation Yaw Accuracy: {7}°",
-                Environment.NewLine,
-                pose.Latitude.ToString("F6"),
-                pose.Longitude.ToString("F6"),
-                pose.HorizontalAccuracy.ToString("F6"),
-                pose.Altitude.ToString("F2"),
-                pose.VerticalAccuracy.ToString("F2"),
-                pose.EunRotation.ToString("F1"),
-                pose.OrientationYawAccuracy.ToString("F1"));
+
             }
             else
             {
-                InfoText.text = "GEOSPATIAL POSE: not tracking";
+                //InfoText.text = "GEOSPATIAL POSE: not tracking";
             }
         }
 
-        /// <summary>
-        /// Connects the <c>ARStreetscapeGeometry</c> to the specified lists for access.
-        /// </summary>
-        /// <param name="eventArgs">The
-        /// <c><see cref="ARStreetscapeGeometriesChangedEventArgs"/></c> containing the
-        /// <c>ARStreetscapeGeometry</c>.
-        /// </param>
-        private void GetStreetscapeGeometry(ARStreetscapeGeometriesChangedEventArgs eventArgs)
-        {
-            _addedStreetscapeGeometries = eventArgs.Added;
-            _updatedStreetscapeGeometries = eventArgs.Updated;
-            _removedStreetscapeGeometries = eventArgs.Removed;
-        }
-
-        /// <summary>
-        /// Sets up a render object for this <c>ARStreetscapeGeometry</c>.
-        /// </summary>
-        /// <param name="streetscapegeometry">The
-        /// <c><see cref="ARStreetscapeGeometry"/></c> object containing the mesh
-        /// to be rendered.</param>
         private void InstantiateRenderObject(ARStreetscapeGeometry streetscapegeometry)
         {
             if (streetscapegeometry.mesh == null)
@@ -815,7 +490,7 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
         }
 
         /// <summary>
-        /// Updates the render object transform based on this StreetscapeGeometries pose.
+        /// Updates the render object transform based on this streetscapegeometrys pose.
         /// It must be called every frame to update the mesh.
         /// </summary>
         /// <param name="streetscapegeometry">The <c><see cref="ARStreetscapeGeometry"/></c>
@@ -861,22 +536,20 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
             _streetscapegeometryGOs.Clear();
         }
 
-        /// <summary>
-        /// Activate or deactivate all UI elements on the anchor setting Panel.
-        /// </summary>
-        /// <param name="state">A bool value to determine if the anchor settings panel is visible.
-        private void SetAnchorPanelState(bool state)
-        {
-            AnchorSettingPanel.gameObject.SetActive(state);
-            GeospatialAnchorToggle.gameObject.SetActive(state);
-            TerrainAnchorToggle.gameObject.SetActive(state);
-            RooftopAnchorToggle.gameObject.SetActive(state);
-        }
-
         private IEnumerator CheckRooftopPromise(ResolveAnchorOnRooftopPromise promise,
             GeospatialAnchorHistory history)
         {
-            yield return promise;
+            var retry = 0;
+            while (promise.State == PromiseState.Pending)
+            {
+                if (retry == 100)
+                {
+                    SnackBarText.text = _resolvingTimeoutMessage;
+                }
+
+                yield return new WaitForSeconds(0.1f);
+                retry = Math.Min(retry + 1, 100);
+            }
 
             var result = promise.Result;
             if (result.RooftopAnchorState == RooftopAnchorState.Success &&
@@ -892,12 +565,8 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
                 anchorGO.transform.parent = result.Anchor.gameObject.transform;
 
                 _anchorObjects.Add(result.Anchor.gameObject);
-                _historyCollection.Collection.Add(history);
 
                 SnackBarText.text = GetDisplayStringForAnchorPlacedSuccess();
-
-                ClearAllButton.gameObject.SetActive(_anchorObjects.Count > 0);
-                SaveGeospatialAnchorHistory();
             }
             else
             {
@@ -910,7 +579,17 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
         private IEnumerator CheckTerrainPromise(ResolveAnchorOnTerrainPromise promise,
             GeospatialAnchorHistory history)
         {
-            yield return promise;
+            var retry = 0;
+            while (promise.State == PromiseState.Pending)
+            {
+                if (retry == 100)
+                {
+                    SnackBarText.text = _resolvingTimeoutMessage;
+                }
+
+                yield return new WaitForSeconds(0.1f);
+                retry = Math.Min(retry + 1, 100);
+            }
 
             var result = promise.Result;
             if (result.TerrainAnchorState == TerrainAnchorState.Success &&
@@ -921,12 +600,8 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
                 anchorGO.transform.parent = result.Anchor.gameObject.transform;
 
                 _anchorObjects.Add(result.Anchor.gameObject);
-                _historyCollection.Collection.Add(history);
 
                 SnackBarText.text = GetDisplayStringForAnchorPlacedSuccess();
-
-                ClearAllButton.gameObject.SetActive(_anchorObjects.Count > 0);
-                SaveGeospatialAnchorHistory();
             }
             else
             {
@@ -949,89 +624,6 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
             return (mapDistance - 2.0f) / (20.0f - 2.0f) + 1.0f;
         }
 
-        private void PlaceAnchorByScreenTap(Vector2 position)
-        {
-            if (_streetscapeGeometryVisibility)
-            {
-                // Raycast against streetscapeGeometry.
-                List<XRRaycastHit> hitResults = new List<XRRaycastHit>();
-                if (RaycastManager.RaycastStreetscapeGeometry(position, ref hitResults))
-                {
-                    if (_anchorType == AnchorType.Rooftop || _anchorType == AnchorType.Terrain)
-                    {
-                        var streetscapeGeometry =
-                            StreetscapeGeometryManager.GetStreetscapeGeometry(
-                                hitResults[0].trackableId);
-                        if (streetscapeGeometry == null)
-                        {
-                            return;
-                        }
-
-                        if (_streetscapegeometryGOs.ContainsKey(streetscapeGeometry.trackableId))
-                        {
-                            Pose modifiedPose = new Pose(hitResults[0].pose.position,
-                                Quaternion.LookRotation(Vector3.right, Vector3.up));
-
-                            GeospatialAnchorHistory history =
-                                CreateHistory(modifiedPose, _anchorType);
-
-                            // Anchor returned will be null, the coroutine will handle creating
-                            // the anchor when the promise is done.
-                            PlaceARAnchor(history, modifiedPose, hitResults[0].trackableId);
-                        }
-                    }
-                    else
-                    {
-                        GeospatialAnchorHistory history = CreateHistory(hitResults[0].pose,
-                            _anchorType);
-                        var anchor = PlaceARAnchor(history, hitResults[0].pose,
-                            hitResults[0].trackableId);
-                        if (anchor != null)
-                        {
-                            _historyCollection.Collection.Add(history);
-                        }
-
-                        ClearAllButton.gameObject.SetActive(_anchorObjects.Count > 0);
-                        SaveGeospatialAnchorHistory();
-                    }
-                }
-
-                return;
-            }
-
-            // Raycast against detected planes.
-            List<ARRaycastHit> planeHitResults = new List<ARRaycastHit>();
-            RaycastManager.Raycast(
-                position, planeHitResults, TrackableType.Planes | TrackableType.FeaturePoint);
-            if (planeHitResults.Count > 0)
-            {
-                GeospatialAnchorHistory history = CreateHistory(planeHitResults[0].pose,
-                    _anchorType);
-
-                if (_anchorType == AnchorType.Rooftop)
-                {
-                    // The coroutine will create the anchor when the promise is done.
-                    Quaternion eunRotation = CreateRotation(history);
-                    ResolveAnchorOnRooftopPromise rooftopPromise =
-                        AnchorManager.ResolveAnchorOnRooftopAsync(
-                            history.Latitude, history.Longitude,
-                            0, eunRotation);
-
-                    StartCoroutine(CheckRooftopPromise(rooftopPromise, history));
-                    return;
-                }
-
-                var anchor = PlaceGeospatialAnchor(history);
-                if (anchor != null)
-                {
-                    _historyCollection.Collection.Add(history);
-                }
-
-                ClearAllButton.gameObject.SetActive(_anchorObjects.Count > 0);
-                SaveGeospatialAnchorHistory();
-            }
-        }
-
         private GeospatialAnchorHistory CreateHistory(Pose pose, AnchorType anchorType)
         {
             GeospatialPose geospatialPose = EarthManager.Convert(pose);
@@ -1051,7 +643,6 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
                 eunRotation =
                     Quaternion.AngleAxis(180f - (float)history.Heading, Vector3.up);
             }
-
             return eunRotation;
         }
 
@@ -1069,8 +660,8 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
                             0, eunRotation);
 
                     StartCoroutine(CheckRooftopPromise(rooftopPromise, history));
-                    return null;
 
+                    return null;
                 case AnchorType.Terrain:
                     ResolveAnchorOnTerrainPromise terrainPromise =
                         AnchorManager.ResolveAnchorOnTerrainAsync(
@@ -1078,8 +669,8 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
                             0, eunRotation);
 
                     StartCoroutine(CheckTerrainPromise(terrainPromise, history));
-                    return null;
 
+                    return null;
                 case AnchorType.Geospatial:
                     ARStreetscapeGeometry streetscapegeometry =
                         StreetscapeGeometryManager.GetStreetscapeGeometry(trackableId);
@@ -1091,11 +682,6 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
 
                     if (anchor != null)
                     {
-                        _anchorObjects.Add(anchor.gameObject);
-                        _historyCollection.Collection.Add(history);
-                        ClearAllButton.gameObject.SetActive(_anchorObjects.Count > 0);
-                        SaveGeospatialAnchorHistory();
-
                         SnackBarText.text = GetDisplayStringForAnchorPlacedSuccess();
                     }
                     else
@@ -1142,7 +728,6 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
                 anchor.gameObject.SetActive(!terrain);
                 anchorGO.transform.parent = anchor.gameObject.transform;
                 _anchorObjects.Add(anchor.gameObject);
-                SnackBarText.text = GetDisplayStringForAnchorPlacedSuccess();
             }
             else
             {
@@ -1152,83 +737,12 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
             return anchor;
         }
 
-        private void ResolveHistory()
-        {
-            if (!_shouldResolvingHistory)
-            {
-                return;
-            }
-
-            _shouldResolvingHistory = false;
-            foreach (var history in _historyCollection.Collection)
-            {
-                switch (history.AnchorType)
-                {
-                    case AnchorType.Rooftop:
-                        PlaceARAnchor(history);
-                        break;
-                    case AnchorType.Terrain:
-                        PlaceARAnchor(history);
-                        break;
-                    default:
-                        PlaceGeospatialAnchor(history);
-                        break;
-                }
-            }
-
-            ClearAllButton.gameObject.SetActive(_anchorObjects.Count > 0);
-            SnackBarText.text = string.Format("{0} anchor(s) set from history.",
-                _anchorObjects.Count);
-        }
-
-        private void LoadGeospatialAnchorHistory()
-        {
-            if (PlayerPrefs.HasKey(_persistentGeospatialAnchorsStorageKey))
-            {
-                _historyCollection = JsonUtility.FromJson<GeospatialAnchorHistoryCollection>(
-                    PlayerPrefs.GetString(_persistentGeospatialAnchorsStorageKey));
-
-                // Remove all records created more than 24 hours and update stored history.
-                DateTime current = DateTime.Now;
-                _historyCollection.Collection.RemoveAll(
-                    data => current.Subtract(data.CreatedTime).Days > 0);
-                PlayerPrefs.SetString(_persistentGeospatialAnchorsStorageKey,
-                    JsonUtility.ToJson(_historyCollection));
-                PlayerPrefs.Save();
-            }
-            else
-            {
-                _historyCollection = new GeospatialAnchorHistoryCollection();
-            }
-        }
-
-        private void SaveGeospatialAnchorHistory()
-        {
-            // Sort the data from latest record to earliest record.
-            _historyCollection.Collection.Sort((left, right) =>
-                right.CreatedTime.CompareTo(left.CreatedTime));
-
-            // Remove the earliest data if the capacity exceeds storage limit.
-            if (_historyCollection.Collection.Count > _storageLimit)
-            {
-                _historyCollection.Collection.RemoveRange(
-                    _storageLimit, _historyCollection.Collection.Count - _storageLimit);
-            }
-
-            PlayerPrefs.SetString(
-                _persistentGeospatialAnchorsStorageKey, JsonUtility.ToJson(_historyCollection));
-            PlayerPrefs.Save();
-        }
-
         private void SwitchToARView(bool enable)
         {
             _isInARView = enable;
             SessionOrigin.gameObject.SetActive(enable);
             Session.gameObject.SetActive(enable);
             ARCoreExtensions.gameObject.SetActive(enable);
-            ARViewCanvas.SetActive(enable);
-            PrivacyPromptCanvas.SetActive(!enable);
-            VPSCheckCanvas.SetActive(false);
             if (enable && _asyncCheck == null)
             {
                 _asyncCheck = AvailabilityCheck();
@@ -1296,7 +810,7 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
 
             Debug.LogFormat("VPS Availability at ({0}, {1}): {2}",
                 location.latitude, location.longitude, vpsAvailabilityPromise.Result);
-            VPSCheckCanvas.SetActive(vpsAvailabilityPromise.Result != VpsAvailability.Available);
+            //VPSCheckCanvas.SetActive(vpsAvailabilityPromise.Result != VpsAvailability.Available);
         }
 
         private IEnumerator StartLocationService()
@@ -1375,11 +889,6 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
                     "Geospatial sample failed to start location service.\n" +
                     "Please restart the app and grant the fine location permission.";
             }
-            else if (SessionOrigin == null || Session == null || ARCoreExtensions == null)
-            {
-                returningReason = string.Format(
-                    "Geospatial sample failed due to missing AR Components.");
-            }
 
             ReturnWithReason(returningReason);
         }
@@ -1391,19 +900,9 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
                 return;
             }
 
-            GeometryToggle.gameObject.SetActive(false);
-            AnchorSettingButton.gameObject.SetActive(false);
-            AnchorSettingPanel.gameObject.SetActive(false);
-            GeospatialAnchorToggle.gameObject.SetActive(false);
-            TerrainAnchorToggle.gameObject.SetActive(false);
-            RooftopAnchorToggle.gameObject.SetActive(false);
-            ClearAllButton.gameObject.SetActive(false);
-            InfoPanel.SetActive(false);
-
             Debug.LogError(reason);
             SnackBarText.text = reason;
             _isReturning = true;
-            Invoke(nameof(QuitApplication), _errorDisplaySeconds);
         }
 
         private void QuitApplication()
@@ -1436,26 +935,247 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
                 $"  VerticalAcc: {pose.VerticalAccuracy:F2}\n" +
                 $". EunRotation: {pose.EunRotation:F2}\n" +
                 $"  OrientationYawAcc: {pose.OrientationYawAccuracy:F2}";
+
+                double f = (pose.VerticalAccuracy + pose.OrientationYawAccuracy + pose.HorizontalAccuracy)/3f;
+                debugimg.color = ColorFromGradient((float)f/10f);
+
         }
 
-        /// <summary>
-        /// Generates the placed anchor success string for the UI display.
-        /// </summary>
-        /// <returns> The string for the UI display for successful anchor placement.</returns>
+        Color ColorFromGradient (float value)  // float between 0-1
+        {
+          return gradient.Evaluate(value);
+        }
+
         private string GetDisplayStringForAnchorPlacedSuccess()
         {
-            return string.Format(
-                    "{0} / {1} Anchor(s) Set!", _anchorObjects.Count, _storageLimit);
+            return "Anchor(s) Set!";
         }
 
-        /// <summary>
-        /// Generates the placed anchor failure string for the UI display.
-        /// </summary>
-        /// <returns> The string for the UI display for a failed anchor placement.</returns>
          private string GetDisplayStringForAnchorPlacedFailure()
         {
             return string.Format(
                     "Failed to set a {0} anchor!", _anchorType);
         }
+
+        public void setAnchorPlusCode(float latpc, float lonpc, int i)
+        {
+          GeospatialAnchorHistory h = new GeospatialAnchorHistory();
+          h.Latitude = latpc;
+          h.Longitude = lonpc;
+          PlaceGeospatialAnchorPlusCode(h, i);
+        }
+
+        private ARGeospatialAnchor PlaceGeospatialAnchorPlusCode(
+            GeospatialAnchorHistory history, int t)
+        {
+            var pose = EarthManager.CameraGeospatialPose;
+
+            Quaternion eunRotation = history.EunRotation;
+            if (eunRotation == Quaternion.identity)
+            {
+                // This history is from a previous app version and EunRotation was not used.
+                eunRotation =
+                    Quaternion.AngleAxis(180f - (float)history.Heading, Vector3.up);
+            }
+
+            var anchor = AnchorManager.AddAnchor(history.Latitude, history.Longitude, pose.Altitude - 1, eunRotation);
+            if (anchor != null)
+            {
+                GameObject anchorGO = Instantiate(GeospatialPrefab, anchor.transform);
+                anchor.gameObject.SetActive(true);
+                _anchorObjects.Add(anchor.gameObject);
+                mapSize[t].position = anchorGO.transform.position;
+                mapSize[t].parent = anchorGO.transform;
+            }
+            else
+            {
+
+            }
+
+            return anchor;
+        }
+
+    public string returnGeoPose()
+    {
+      var pose = EarthManager.CameraGeospatialPose;
+      string str = pose.Latitude.ToString() + ":" + pose.Longitude.ToString() + ":" + pose.EunRotation.ToString("F2") + ":" + pose.Altitude.ToString();
+      return str;
+    }
+
+    public List<string> returnLatLon()
+    {
+      List<string> list = new List<string>();
+      var pose = EarthManager.CameraGeospatialPose;
+      list.Add(pose.Latitude.ToString());
+      list.Add(pose.Longitude.ToString());
+      list.Add(pose.EunRotation.ToString("F2"));
+      list.Add(pose.Altitude.ToString());
+
+      return list;
+    }
+
+    public List<double> returnLatLonDbl()
+    {
+      List<double> list = new List<double>();
+      var pose = EarthManager.CameraGeospatialPose;
+      list.Add(pose.Latitude);
+      list.Add(pose.Longitude);
+      return list;
+    }
+
+      public void stopChecking()
+      {
+        StopCoroutine("positionLoop");
+		Debug.Log("stop position loop");
+      }
+      public void startChecking()
+      {
+        StartCoroutine("positionLoop");
+		Debug.Log("start position loop");
+      }
+
+      IEnumerator positionLoop()
+      {
+		    yield return new WaitForSeconds(3);
+
+			var earthTrackingState = EarthManager.EarthTrackingState;
+			float dist = 0;
+			if(earthTrackingState == TrackingState.Tracking)
+			{
+				    GeospatialPose firstpose = EarthManager.CameraGeospatialPose;
+					firstlat = firstpose.Latitude;
+					firstlon = firstpose.Longitude;
+					oldlat = firstlat;
+					oldlon = firstlon;
+			}
+			else
+			{
+				firstlat = Input.location.lastData.latitude;
+				firstlon = Input.location.lastData.longitude;
+				oldlat = firstlat;
+				oldlon = firstlon;
+			}
+
+		StartCoroutine(distanceLoop());
+
+
+        lastDistance = 0;
+
+        while(true)
+        {
+          GeospatialPose pose = EarthManager.CameraGeospatialPose;
+          dist = distance.CalculateDistance((float)pose.Latitude,(float)oldlat,(float)pose.Longitude,(float)oldlon);
+          if(dist > 5)
+          {
+            oldlat = pose.Latitude;
+            oldlon = pose.Longitude;
+      			if(squareReady == true)
+      			{
+      				gps.getPlusCodeVisited(pose.Latitude.ToString(),pose.Longitude.ToString());
+      			}
+          }
+          yield return new WaitForSeconds(5);
+    		  if(squareReady == true)
+    		  {
+    				gps.getPlusCodeVisited(Input.location.lastData.latitude.ToString(),Input.location.lastData.longitude.ToString());
+    		  }
+          yield return new WaitForSeconds(5);
+        }
+        yield return new WaitForEndOfFrame();
+      }
+
+
+      IEnumerator distanceLoop()
+      {
+		 Debug.Log("start distanceLoop");
+		 string diststring = "0m";
+		 int count = 0;
+
+        while(true)
+        {
+			yield return new WaitForSeconds(10);
+
+			var earthTrackingState = EarthManager.EarthTrackingState;
+			float dist = 0;
+			if(earthTrackingState == TrackingState.Tracking)
+			{
+				GeospatialPose pose = EarthManager.CameraGeospatialPose;
+				dist = distance.CalculateDistance((float)pose.Latitude,(float)firstlat,(float)pose.Longitude,(float)firstlon);
+
+				Debug.Log("start distanceLoop");
+			}
+			else
+			{
+				dist = distance.CalculateDistance((float)Input.location.lastData.latitude,(float)firstlat,(float)Input.location.lastData.longitude,(float)firstlon);
+			}
+
+          float diffdistance = dist - (float)lastDistance;
+
+          if(dist < 1000)
+          {
+            diststring = dist.ToString("F0") + "m";
+          }
+          if(dist > 1000)
+          {
+            diststring = (dist/1000).ToString("F1") + "km";
+          }
+
+		   Debug.Log(diststring);
+
+          if(diffdistance > 100)
+          {
+            lastDistance = dist;
+
+            if (texttospeech == true)
+            {
+              string message = "";
+
+              if(square.cardBalance != square.startcardBalance)
+              {
+                int totalGain = square.cardBalance - square.startcardBalance;
+                message = "You have walked " + diststring + " and earned " + totalGain + " yen, the total balance on your gift card is " + square.cardBalance.ToString() + " yen";
+              }
+              else
+              {
+                message = "You have walked " + diststring + ", the total balance on your gift card is " + square.cardBalance.ToString() + " yen";
+              }
+
+              text2speech.remoteRequest(message);
+            }
+          }
+          distanceTxt.text = diststring;
+		  count += 1;
+        }
+      }
+
+      public void debugVoice()
+      {
+        GeospatialPose pose = EarthManager.CameraGeospatialPose;
+        float dist = distance.CalculateDistance((float)pose.Latitude,(float)firstlat,(float)pose.Longitude,(float)firstlon);
+        string diststring = "0m";
+        if(dist < 1000)
+        {
+          diststring = dist.ToString("F0") + "m";
+        }
+        if(dist > 1000)
+        {
+          diststring = (dist/1000).ToString("F1") + "km";
+        }
+
+        string message = "";
+
+        if(square.cardBalance != square.startcardBalance)
+        {
+          int totalGain = square.cardBalance - square.startcardBalance;
+          message = "You have walked " + diststring + " and earned " + totalGain + " yen, the total balance on your gift card is " + square.cardBalance.ToString() + " yen";
+        }
+        else
+        {
+          message = "You have walked " + diststring + ", the total balance on your gift card is " + square.cardBalance.ToString() + " yen";
+        }
+
+        text2speech.remoteRequest(message);
+      }
+
     }
 }

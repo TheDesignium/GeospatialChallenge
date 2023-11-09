@@ -1,0 +1,20 @@
+<dependencies>
+    <androidPackages>
+        <androidPackage spec="com.google.android.gms:play-services-maps:18.0.2">
+            <androidSdkPackageIds>
+                <androidSdkPackageId>extra-google-m2repository</androidSdkPackageId>
+            </androidSdkPackageIds>
+            <repositories>
+                <repository>https://maven.google.com</repository>
+            </repositories>
+        </androidPackage>
+        <androidPackage spec="com.google.maps.android:android-maps-utils:0.5">
+            <androidSdkPackageIds>
+                <androidSdkPackageId>extra-google-m2repository</androidSdkPackageId>
+            </androidSdkPackageIds>
+            <repositories>
+                <repository>https://maven.google.com</repository>
+            </repositories>
+        </androidPackage>
+    </androidPackages>
+</dependencies>

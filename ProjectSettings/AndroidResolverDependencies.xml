@@ -1,6 +1,8 @@
 <dependencies>
   <packages>
-    <package>com.google.android.gms:play-services-location:17+</package>
+    <package>com.google.android.gms:play-services-location:16+</package>
+    <package>com.google.android.gms:play-services-maps:18.0.2</package>
+    <package>com.google.maps.android:android-maps-utils:0.5</package>
   </packages>
   <files>
     <file>Assets/Plugins/Android/androidx.annotation.annotation-1.1.0.jar</file>
@@ -30,15 +32,17 @@
     <file>Assets/Plugins/Android/androidx.swiperefreshlayout.swiperefreshlayout-1.0.0.aar</file>
     <file>Assets/Plugins/Android/androidx.versionedparcelable.versionedparcelable-1.1.0.aar</file>
     <file>Assets/Plugins/Android/androidx.viewpager.viewpager-1.0.0.aar</file>
-    <file>Assets/Plugins/Android/com.google.android.gms.play-services-base-17.3.0.aar</file>
-    <file>Assets/Plugins/Android/com.google.android.gms.play-services-basement-17.3.0.aar</file>
-    <file>Assets/Plugins/Android/com.google.android.gms.play-services-location-17.1.0.aar</file>
-    <file>Assets/Plugins/Android/com.google.android.gms.play-services-places-placereport-17.0.0.aar</file>
-    <file>Assets/Plugins/Android/com.google.android.gms.play-services-tasks-17.1.0.aar</file>
+    <file>Assets/Plugins/Android/com.google.android.gms.play-services-base-18.0.1.aar</file>
+    <file>Assets/Plugins/Android/com.google.android.gms.play-services-basement-18.0.0.aar</file>
+    <file>Assets/Plugins/Android/com.google.android.gms.play-services-location-16.0.0.aar</file>
+    <file>Assets/Plugins/Android/com.google.android.gms.play-services-maps-18.0.2.aar</file>
+    <file>Assets/Plugins/Android/com.google.android.gms.play-services-places-placereport-16.0.0.aar</file>
+    <file>Assets/Plugins/Android/com.google.android.gms.play-services-tasks-18.0.1.aar</file>
+    <file>Assets/Plugins/Android/com.google.maps.android.android-maps-utils-0.5.aar</file>
   </files>
   <settings>
     <setting name="androidAbis" value="arm64-v8a" />
-    <setting name="bundleId" value="com.designium.GeospatialChallenge" />
+    <setting name="bundleId" value="com.designium.PlusCodeCollector" />
     <setting name="explodeAars" value="True" />
     <setting name="gradleBuildEnabled" value="True" />
     <setting name="gradlePropertiesTemplateEnabled" value="False" />
@@ -49,8 +53,6 @@
     <setting name="patchAndroidManifest" value="True" />
     <setting name="patchMainTemplateGradle" value="True" />
     <setting name="projectExportEnabled" value="False" />
-    <setting name="useFullCustomMavenRepoPathWhenExport" value="True" />
-    <setting name="useFullCustomMavenRepoPathWhenNotExport" value="False" />
     <setting name="useJetifier" value="True" />
   </settings>
 </dependencies>
