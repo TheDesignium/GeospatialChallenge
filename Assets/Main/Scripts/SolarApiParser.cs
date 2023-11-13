@@ -28,22 +28,24 @@ public class SolarApiParser : MonoBehaviour
     public Animator ani;
     public bool hidden = true;
 
-	public Transform targetpoint;
+	  public Transform targetpoint;
+    public Transform fakeParent;
 
     public GameObject loading;
     public GameObject tap;
-	public GameObject visuals;
-	public GameObject sun;
+	  public GameObject visuals;
+	  public GameObject sun;
     public GameObject objectPrefab; // Prefab of the object you want to place
-	public List<GameObject> panels = new List<GameObject>();
+	  public List<GameObject> panels = new List<GameObject>();
 
     List<CompleteBoundingBox> bboxList = new List<CompleteBoundingBox>();
 
 	public Transform[] areaCorners;
 
-	Vector3 targetPositionA = new Vector3();
-	Vector3 targetPositionB = new Vector3();
-	Vector3 targetPositionC = new Vector3();
+	public Vector3 targetPositionA = new Vector3();
+	public Vector3 targetPositionB = new Vector3();
+	public Vector3 targetPositionC = new Vector3();
+  public Vector3 targetPositionD = new Vector3();
 
 	public float lerpSpeed;
 
@@ -51,8 +53,7 @@ public class SolarApiParser : MonoBehaviour
     public int numberOfObjects = 9; // Number of objects to place
     public float areaInSquareMeters = 100.0f; // Area of the square in square meters
 
-
-	public bool setUp;
+	  public bool setUp;
 
     void Start()
     {
@@ -84,6 +85,9 @@ public class SolarApiParser : MonoBehaviour
             float qual = sum/count;
             string quality = qual.ToString("F0");
 
+            Debug.Log(data.solarPotential.maxArrayAreaMeters2 + "/" + data.solarPotential.wholeRoofStats.groundAreaMeters2 + "=" + data.solarPotential.maxArrayAreaMeters2/data.solarPotential.wholeRoofStats.groundAreaMeters2);
+            Debug.Log(data.solarPotential.maxSunshineHoursPerYear/4380f);
+
             if(json.Contains("financialAnalyses"))
             {
               CashPurchaseSavings cashPurchaseSavings = data.financialAnalyses[0].cashPurchaseSavings; // Assuming you want the first financial analysis
@@ -104,7 +108,7 @@ public class SolarApiParser : MonoBehaviour
             sunshineTxt.text = "Sunshine hours per year: " + sunshine;
             qualityTxt.text = "Average sunshine quality: " + quality;
 
-			sunTxtA.text = "Sunshine hours per year: " + sunshine;
+			      sunTxtA.text = "Sunshine hours per year: " + sunshine;
             sunTxtB.text = "Average sunshine quality: " + quality;
 
             ani.Play("show",0,0);
@@ -115,10 +119,10 @@ public class SolarApiParser : MonoBehaviour
             string b = data.solarPotential.panelWidthMeters.ToString();
 
 			//imageryQuality
-			datetext.text = "Data from " + data.imageryDate.year + ". Quality: " + data.imageryQuality;
+			     datetext.text = "Data from " + data.imageryDate.year + ". Quality: " + data.imageryQuality;
 			//imageryDate
 
-            Debug.Log(a + ":" + b);
+            //Debug.Log(a + ":" + b);
 
             foreach (var segment in data.solarPotential.roofSegmentStats)
             {
@@ -133,12 +137,14 @@ public class SolarApiParser : MonoBehaviour
 			numberOfObjects = data.solarPotential.maxArrayPanelsCount;
 
 			float sideLength = Mathf.Sqrt(data.solarPotential.maxArrayAreaMeters2);
+      float halfLength = sideLength/2;
 
-			targetPositionA = new Vector3(0,0,sideLength);
-			targetPositionB = new Vector3(sideLength,0,sideLength);
-			targetPositionC = new Vector3(sideLength,0,0);
+			targetPositionA = new Vector3(-halfLength,0,sideLength);
+			targetPositionB = new Vector3(-halfLength,0,0);
+			targetPositionC = new Vector3(halfLength,0,0);
+      targetPositionD = new Vector3(halfLength,0,sideLength);
 
-			StartCoroutine(setUpLoop(sideLength * 0.8f));
+			StartCoroutine(setUpLoop(sideLength * 0.9f));
 
 			setUp = true;
         }
@@ -166,11 +172,9 @@ public class SolarApiParser : MonoBehaviour
     areaCorners[1].localPosition = new Vector3(0, 0, 0);
     areaCorners[2].localPosition = new Vector3(0, 0, 0);
     areaCorners[3].localPosition = new Vector3(0, 0, 0);
-    countTxt.text = "Potential Solar Panels: 0";
+    areaCorners[0].localPosition = new Vector3(0, 0, 0);
 
-		//Vector3 v3Position = new Vector3(targetpoint.position.x, Camera.main.transform.position.y, targetpoint.position.x);
-    //visuals.transform.position = v3Position;
-    //Debug.Log(v3Position);
+    countTxt.text = "Potential Solar Panels: 0";
 
     visuals.transform.position = targetpoint.position;
 	  Vector3 v3Position = visuals.transform.position;
@@ -191,27 +195,33 @@ public class SolarApiParser : MonoBehaviour
 		ani.Play("show",0,0);
 
 		float distance = 9999f;
-		while(distance > 0.05f)
+		while(distance > 0.04f)
 		{
 			areaCorners[1].localPosition = Vector3.Lerp(areaCorners[1].localPosition, targetPositionA, lerpSpeed * Time.deltaTime);
 			areaCorners[2].localPosition = Vector3.Lerp(areaCorners[2].localPosition, targetPositionB, lerpSpeed * Time.deltaTime);
 			areaCorners[3].localPosition = Vector3.Lerp(areaCorners[3].localPosition, targetPositionC, lerpSpeed * Time.deltaTime);
+      areaCorners[0].localPosition = Vector3.Lerp(areaCorners[0].localPosition, targetPositionD, lerpSpeed * Time.deltaTime);
+
 			distance = Vector3.Distance(areaCorners[3].localPosition, targetPositionC);
 			yield return new WaitForEndOfFrame();
 		}
+
+    distance = Vector3.Distance(areaCorners[0].position, areaCorners[1].position);
+
+    Debug.Log(sideLength + "::" + distance);
 
 		// Calculate the number of rows and columns
 		int numRows = Mathf.CeilToInt(Mathf.Sqrt(numberOfObjects));
 		int numCols = Mathf.CeilToInt((float)numberOfObjects / numRows);
 
-    yield return new WaitForSeconds(0.3f);
+    yield return new WaitForSeconds(0.5f);
 
 		// Calculate the spacing between objects
 		float horizontalSpacing = sideLength / numCols;
 		float verticalSpacing = sideLength / numRows;
 
-		Debug.Log(numRows + ":" + numCols);
-		Debug.Log(horizontalSpacing + ":" + verticalSpacing);
+		//Debug.Log(numRows + ":" + numCols);
+		//Debug.Log(horizontalSpacing + ":" + verticalSpacing);
 
 		int counter = 0;
 
@@ -228,8 +238,7 @@ public class SolarApiParser : MonoBehaviour
         					GameObject newObj = Instantiate(objectPrefab, new Vector3(xPos, yPos, 0), Quaternion.identity);
 
         					// Set the parent to group the objects
-        					newObj.transform.parent = parentTransform;
-
+        					newObj.transform.parent = fakeParent;
         					newObj.transform.localPosition = new Vector3(xPos, 0, yPos);
         					newObj.transform.localEulerAngles = new Vector3(0, -90, 0);
         					newObj.transform.localScale = new Vector3(horizontalSpacing * 0.9f, horizontalSpacing * 0.9f, horizontalSpacing * 0.9f);
@@ -239,7 +248,8 @@ public class SolarApiParser : MonoBehaviour
 
         					countTxt.text = "Potential Solar Panels: " + counter.ToString();
 
-        					yield return new WaitForSeconds(0.05f);
+        					//yield return new WaitForSeconds(0.05f);
+                  yield return new WaitForEndOfFrame();
         				}
 
             }

@@ -31,6 +31,8 @@ using TMPro;
       public string solarKey;
       public Transform debugTarget;
 
+      public TMP_Text locationTxt;
+
       public double debuglat = 35.62550337538253;
       public double debuglon = 139.71955919057592;
 
@@ -798,6 +800,7 @@ using TMPro;
               // Show results as text
               Debug.Log(www.downloadHandler.text);
               solar.checkData(www.downloadHandler.text);
+              locationTxt.text = "Location: " + lat + "," + lon;
           }
 
           yield return new WaitForEndOfFrame();

@@ -27,7 +27,7 @@ public class planeScale : MonoBehaviour
         scale.y = 1f;
         scale.z = (Vector3.Distance(pointA.position,pointD.position))/div;
         transform.localScale = scale;
-        var look = (pointA.position + pointB.position)/2;
+        var look = (pointB.position + pointC.position)/2;
         look.y = transform.position.y;
         transform.LookAt(look);
     }
