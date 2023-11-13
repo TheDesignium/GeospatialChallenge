@@ -81,6 +81,7 @@ public class Rope : MonoBehaviour
     public List<int> attachIndexs = new List<int>();
 
     bool _isReady = false;
+    public bool active = false;
     private MaterialPropertyBlock block;
 
     int _displayIndex = 0;
@@ -93,6 +94,10 @@ public class Rope : MonoBehaviour
     public int multipleOf = 1;     // The number to check if the first number is a multiple of
 
     public Color[] colours;
+
+    float dynamicSimulationDuration = 5f; // Adjust this as needed
+    bool switchToStaticMesh = false;
+    GameObject staticMeshObject; // GameObject for rendering the static mesh
 
     public void Set(Vector3 stPos, Vector3 endPos)
     {
@@ -170,15 +175,10 @@ public class Rope : MonoBehaviour
         linePositions = new Vector3[totalNodes];
 
         _isReady = true;
+        active = true;
 
-        StartCoroutine(stopSim());
     }
 
-    IEnumerator stopSim()
-    {
-            yield return new WaitForSeconds(5);
-            _isReady = false;
-    }
 
         private bool IsMultiple(int number, int multiple)
     {
@@ -199,13 +199,13 @@ public class Rope : MonoBehaviour
     {
         if (!_isReady) return;
 
-        // Draw rope with lineRenderer
-        DrawRope();
-        // Draw objects on rope
-        DrawDecoration();
+          if (active == true)
+          {
+              // Continue dynamic simulation while active is true
+              DrawRope();
+              DrawDecoration();
+          }
 
-        // Instanced drawing here is really performant over using GameObjects
-        if (totalNodes > 2)
           Graphics.DrawMeshInstanced(link, 0, linkMaterial, matrices, totalNodes, block);
     }
 
@@ -213,7 +213,10 @@ public class Rope : MonoBehaviour
     {
         if (!_isReady) return;
 
-        Simulate();
+        if (active == true)
+        {
+          Simulate();
+        }
 
         for (int i = 0; i < iterations; i++)
         {
@@ -221,30 +224,36 @@ public class Rope : MonoBehaviour
 
             if(i % iterateCollisionsEvery == 0)
             {
-                AdjustCollisions();
+                //AdjustCollisions();
             }
         }
 
-        SetAngles();
-        TranslateMatrices();
+        if (active == true)
+        {
+          SetAngles();
+          TranslateMatrices();
+        }
     }
 
     private void Simulate()
     {
-        var fixedDt = Time.fixedDeltaTime;
-        for (int i = 0; i < totalNodes; i++)
+        if(active == true)
         {
-            Vector3 velocity = currentNodePositions[i] - previousNodePositions[i];
-            velocity *= velocityDampen;
+          var fixedDt = Time.fixedDeltaTime;
+          for (int i = 0; i < totalNodes; i++)
+          {
+              Vector3 velocity = currentNodePositions[i] - previousNodePositions[i];
+              velocity *= velocityDampen;
 
-            previousNodePositions[i] = currentNodePositions[i];
+              previousNodePositions[i] = currentNodePositions[i];
 
-            // calculate new position
-            Vector3 newPos = currentNodePositions[i] + velocity;
-            newPos += gravity * fixedDt;
-            Vector3 direction = currentNodePositions[i] - newPos;
+              // calculate new position
+              Vector3 newPos = currentNodePositions[i] + velocity;
+              newPos += gravity * fixedDt;
+              Vector3 direction = currentNodePositions[i] - newPos;
 
-            currentNodePositions[i] = newPos;
+              currentNodePositions[i] = newPos;
+          }
         }
     }
 
@@ -398,6 +407,41 @@ public class Rope : MonoBehaviour
         obj.transform.position = currentNodePositions[nodeIndex];
     }
 
+    MeshRenderer staticMeshRenderer;
+    MaterialPropertyBlock staticBlock;
+
+    public void switchOff()
+    {
+      /*
+        // Create a new GameObject for the static rope
+        GameObject staticRope = new GameObject("StaticRope");
+            staticRope.transform.parent = transform;
+            staticRope.transform.localPosition = Vector3.zero;
+            staticRope.transform.localRotation = Quaternion.identity;
+            staticRope.transform.localScale = Vector3.one;
+
+            // Create a MeshRenderer for the static rope
+            staticMeshRenderer = staticRope.AddComponent<MeshRenderer>();
+            staticMeshRenderer.material = linkMaterial;
+
+            // Create a MaterialPropertyBlock for the static rope
+            staticBlock = new MaterialPropertyBlock();
+
+            // Disable the simulated rope's rendering
+            lineRenderer.enabled = false;
+
+            // Enable the rendering component of the static rope
+            staticMeshRenderer.enabled = true;
+
+            // Set staticBlock properties here (e.g., color)
+            staticBlock.SetVectorArray("_Color", colors);
+
+        // Enable the rendering component of the static rope
+        staticMeshRenderer.enabled = true;
+        // After the specified time, stop dynamic simulation
+        */
+        active = false;
+    }
 }
 
 }

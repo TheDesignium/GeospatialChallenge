@@ -552,7 +552,7 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
                 return;
             }
 
-            UpdateDebugInfo();
+            //UpdateDebugInfo();
 
             // Check session error status.
             LifecycleUpdate();
@@ -737,21 +737,7 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
             InfoPanel.SetActive(true);
             if (earthTrackingState == TrackingState.Tracking)
             {
-                InfoText.text = string.Format(
-                "Latitude/Longitude: {1}°, {2}°{0}" +
-                "Horizontal Accuracy: {3}m{0}" +
-                "Altitude: {4}m{0}" +
-                "Vertical Accuracy: {5}m{0}" +
-                "Eun Rotation: {6}{0}" +
-                "Orientation Yaw Accuracy: {7}°",
-                Environment.NewLine,
-                pose.Latitude.ToString("F6"),
-                pose.Longitude.ToString("F6"),
-                pose.HorizontalAccuracy.ToString("F6"),
-                pose.Altitude.ToString("F2"),
-                pose.VerticalAccuracy.ToString("F2"),
-                pose.EunRotation.ToString("F1"),
-                pose.OrientationYawAccuracy.ToString("F1"));
+                InfoText.text = "tracking";
             }
             else
             {
@@ -1428,33 +1414,6 @@ namespace Google.XR.ARCoreExtensions.Samples.Geospatial
         private void QuitApplication()
         {
             Application.Quit();
-        }
-
-        private void UpdateDebugInfo()
-        {
-            if (!Debug.isDebugBuild || EarthManager == null)
-            {
-                return;
-            }
-
-            var pose = EarthManager.EarthState == EarthState.Enabled &&
-                EarthManager.EarthTrackingState == TrackingState.Tracking ?
-                EarthManager.CameraGeospatialPose : new GeospatialPose();
-            var supported = EarthManager.IsGeospatialModeSupported(GeospatialMode.Enabled);
-            DebugText.text =
-                $"IsReturning: {_isReturning}\n" +
-                $"IsLocalizing: {_isLocalizing}\n" +
-                $"SessionState: {ARSession.state}\n" +
-                $"LocationServiceStatus: {Input.location.status}\n" +
-                $"FeatureSupported: {supported}\n" +
-                $"EarthState: {EarthManager.EarthState}\n" +
-                $"EarthTrackingState: {EarthManager.EarthTrackingState}\n" +
-                $"  LAT/LNG: {pose.Latitude:F6}, {pose.Longitude:F6}\n" +
-                $"  HorizontalAcc: {pose.HorizontalAccuracy:F6}\n" +
-                $"  ALT: {pose.Altitude:F2}\n" +
-                $"  VerticalAcc: {pose.VerticalAccuracy:F2}\n" +
-                $". EunRotation: {pose.EunRotation:F2}\n" +
-                $"  OrientationYawAcc: {pose.OrientationYawAccuracy:F2}";
         }
 
         /// <summary>

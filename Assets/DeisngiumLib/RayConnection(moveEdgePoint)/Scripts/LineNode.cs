@@ -82,6 +82,15 @@ namespace Deisgnium.RayConnection
 
           ShowLine(_lineShowEnableAfterEnd);
         }
+
+        StartCoroutine(stopSim());
+      }
+
+      IEnumerator stopSim()
+      {
+              yield return new WaitForSeconds(5);
+              _displayRope.switchOff();
+              Debug.Log("disable rope");
       }
 
       public void ShowLine(bool enable)
