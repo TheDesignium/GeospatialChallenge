@@ -1154,7 +1154,7 @@ MonoBehaviour:
   - {fileID: 2100000, guid: 52b65ab158124e6418706fcb3bc63281, type: 2}
   - {fileID: 2100000, guid: 52b65ab158124e6418706fcb3bc63281, type: 2}
   - {fileID: 2100000, guid: 52b65ab158124e6418706fcb3bc63281, type: 2}
-  StreetscapeGeometryMaterialTerrain: {fileID: 2100000, guid: 52b65ab158124e6418706fcb3bc63281, type: 2}
+  StreetscapeGeometryMaterialTerrain: {fileID: 2100000, guid: 1f247d4221bdbd34f9e44cffe8c7c7ed, type: 2}
   GeospatialPrefab: {fileID: 5831908950388203684, guid: f09a13e3d47394ab588884ffd124d732, type: 3}
   TerrainPrefab: {fileID: 5831908950388203684, guid: a46bc1cf69cc345ba81f34525c7e1b09, type: 3}
   PrivacyPromptCanvas: {fileID: 782365343}
