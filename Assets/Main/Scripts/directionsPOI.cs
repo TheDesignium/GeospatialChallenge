@@ -61,6 +61,7 @@ public class directionsPOI : MonoBehaviour
 	public bool ARNavigation;
 
 	public TMP_Text resultText;
+	public TMP_Text statusText;
 
     private void Start()
     {
@@ -107,6 +108,8 @@ public class directionsPOI : MonoBehaviour
 
 	IEnumerator checkPOIs()
 	{
+		statusText.gameObject.SetActive(true);
+		statusText.text = "Loading . . .";
 #if !UNITY_EDITOR
 		google.OnClearMapClick();
 		geo.clearAll();
@@ -121,6 +124,7 @@ public class directionsPOI : MonoBehaviour
 
 		details.radius = total.ToString();
 
+		statusText.text = "Getting Directions . . .";
 		yield return StartCoroutine(GetDirections(latfrom, lonfrom, latto, lonto));
 
 		yield return new WaitForEndOfFrame();
@@ -130,6 +134,8 @@ public class directionsPOI : MonoBehaviour
 
 		yield return new WaitForEndOfFrame();
 
+		statusText.text = "Getting Points of Interest . . .";
+
 		yield return details.GetDetails(false);
 
 		yield return new WaitForEndOfFrame();
@@ -137,7 +143,7 @@ public class directionsPOI : MonoBehaviour
 		if(details.latitudesList.Count() == 0)
 		{
 			UnityEngine.Debug.Log("No POIs");
-			StartCoroutine(fadeOutText("No results found in this area."));
+			StartCoroutine(fadeOutText("No points of interest foundalong this route."));
 			loadingUI.SetActive(false);
 			yield break;
 		}
@@ -173,7 +179,7 @@ public class directionsPOI : MonoBehaviour
 					}
 					poicounter += 1;
 				}
-				yield return new WaitForEndOfFrame();
+				//yield return new WaitForEndOfFrame();
       }
 
 		if(poiList.Count != 0)
@@ -203,6 +209,9 @@ public class directionsPOI : MonoBehaviour
 
 		Resources.UnloadUnusedAssets();
 		loadingUI.SetActive(false);
+		statusText.gameObject.SetActive(false);
+		StartCoroutine(fadeOutText("Complete"));
+
 	}
 
 	public void recheck()

@@ -60,6 +60,7 @@ public class geoDetail : MonoBehaviour
             Quaternion quaternion = Quaternion.identity;
             var anchor = _anchors.ResolveAnchorOnTerrain(latitude, longitude, 0, quaternion);
             var anchoredAsset = Instantiate(GeospatialAssetPrefab, anchor.transform);
+            anchoredAsset.transform.GetChild(0).GetChild(0).GetChild(0).gameObject.GetComponent<Renderer>().material = materials[catindex];
             objects.Add(anchoredAsset);
           }
     #endif
