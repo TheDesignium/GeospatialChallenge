@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -12,6 +13,9 @@ namespace Deisgnium.RayConnection
       [SerializeField] private Camera _cam;
       [SerializeField] private GameObject _connectorPrefab;
       [SerializeField] private GameObject Cursor;
+
+      public GameObject[] objectToSpawn;
+      public GameObject debugObject;
 
       // draw connection
       public int _nodeMaxNums = 2;
@@ -33,6 +37,10 @@ namespace Deisgnium.RayConnection
 
       public TMP_Text textUI;
 
+      public float angleThreshold = 45f;
+
+      List<GameObject> objects = new List<GameObject>();
+
       void Start()
       {
 #if UNITY_EDITOR
@@ -42,10 +50,11 @@ namespace Deisgnium.RayConnection
 #if !UNITY_EDITOR
          // incase frame rate is too hight on Eidtor, the item pops up timing is wrong
          Application.targetFrameRate = 30;
+         debugObject.SetActive(false);
 #endif
         }
 
-        void OnDestroy()
+      void OnDestroy()
       {
         _connectors.ReleaseGameObjectList();
       }
@@ -53,37 +62,54 @@ namespace Deisgnium.RayConnection
 
       void Update()
       {
-
 #if UNITY_EDITOR
         if (Input.GetMouseButtonDown(0))
         {
-          Debug.Log("tap");
-
           Vector2 mousePos = Input.mousePosition;
 
-          if (Time.time - touchTime > 0.3f)
+          Ray ray = _cam.ScreenPointToRay(mousePos);
+          RaycastHit hit;
+          if (Physics.Raycast(ray, out hit, Mathf.Infinity))
           {
-            Vector3 v3 = _cam.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, Random.Range(5,50)));
-            Cursor.transform.position = v3;
+              Vector3 hp = hit.point;
 
-            if(_count > 0)
-            {
-              float thedistance = Vector3.Distance(startPosition, v3);
-              if(thedistance < distanceLimit)
+              if (hit.collider != null)
               {
-                  DrawCheck(v3);
+                  float angle = Vector3.Angle(hit.normal, Vector3.up);
+
+                  if (angle < angleThreshold)
+                  {
+                    Debug.Log("Hit a horizontal surface");
+                    SpawnObject(hit.point);
+                  }
+                  else
+                  {
+                    Debug.Log("Hit a vertical surface");
+                    if (Time.time - touchTime > 0.3f)
+                    {
+                        Cursor.transform.position = hp;
+                        if(_count > 0)
+                        {
+                          float distance = Vector3.Distance(startPosition, hp);
+                          Debug.Log(distance);
+                          if(distance < distanceLimit)
+                          {
+                              DrawCheck(hp);
+                          }
+                          else
+                          {
+                            StopCoroutine("fadeOutUI");
+                            StartCoroutine("fadeOutUI");
+                          }
+                        }
+                        else
+                        {
+                          DrawCheck(hp);
+                        }
+                        touchTime = Time.time;
+                    }
+                  }
               }
-              else
-              {
-                StopCoroutine("fadeOutUI");
-                StartCoroutine("fadeOutUI");
-              }
-            }
-            else
-            {
-              DrawCheck(v3);
-            }
-            touchTime = Time.time;
           }
         }
 #endif
@@ -100,28 +126,43 @@ namespace Deisgnium.RayConnection
                     if (Physics.Raycast(ray, out hit, Mathf.Infinity) && Input.GetTouch(0).position.y > 300)
                     {
                         Vector3 hp = hit.point;
-                        if (Time.time - touchTime > 0.3f)
+
+                        if (hit.collider != null)
                         {
-                            Cursor.transform.position = hp;
-                            if(_count > 0)
+                            float angle = Vector3.Angle(hit.normal, Vector3.up);
+
+                            if (angle < angleThreshold)
                             {
-                              float distance = Vector3.Distance(startPosition, hp);
-                              Debug.Log(distance);
-                              if(distance < distanceLimit)
-                              {
-                                  DrawCheck(hp);
-                              }
-                              else
-                              {
-                                StopCoroutine("fadeOutUI");
-                                StartCoroutine("fadeOutUI");
-                              }
+                              Debug.Log("Hit a horizontal surface");
+                              SpawnObject(hit.point);
                             }
                             else
                             {
-                              DrawCheck(hp);
+                              Debug.Log("Hit a vertical surface");
+                              if (Time.time - touchTime > 0.3f)
+                              {
+                                  Cursor.transform.position = hp;
+                                  if(_count > 0)
+                                  {
+                                    float distance = Vector3.Distance(startPosition, hp);
+                                    Debug.Log(distance);
+                                    if(distance < distanceLimit)
+                                    {
+                                        DrawCheck(hp);
+                                    }
+                                    else
+                                    {
+                                      StopCoroutine("fadeOutUI");
+                                      StartCoroutine("fadeOutUI");
+                                    }
+                                  }
+                                  else
+                                  {
+                                    DrawCheck(hp);
+                                  }
+                                  touchTime = Time.time;
+                              }
                             }
-                            touchTime = Time.time;
                         }
                     }
                 }
@@ -130,7 +171,22 @@ namespace Deisgnium.RayConnection
 
         }
 
-        void FixedUpdate()
+        void SpawnObject(Vector3 position)
+        {
+          Vector3 lookPos = new Vector3(Camera.main.transform.position.x, position.y, Camera.main.transform.position.z);
+          Vector3 relativePos = lookPos - position;
+          Quaternion rotation = Quaternion.LookRotation(relativePos, Vector3.up);
+          int rando = Random.Range(0, objectToSpawn.Count());
+          GameObject g = Instantiate(objectToSpawn[rando], position, rotation);
+          objects.Add(g);
+          float randoY = Random.Range(-50, 50);
+          Vector3 v3 = g.transform.eulerAngles;
+          v3.y += randoY;
+          g.transform.eulerAngles = v3;
+          resetTouch();
+        }
+
+      void FixedUpdate()
       {
         if (_currentLine != null)
         {
@@ -147,7 +203,8 @@ namespace Deisgnium.RayConnection
           startPosition = hp;
         }
 
-        if(_count < _nodeMaxNums) {
+        if(_count < _nodeMaxNums)
+        {
           AddNode();
         }
         if(_count == _nodeMaxNums)
@@ -218,12 +275,24 @@ namespace Deisgnium.RayConnection
         _count = 0;
       }
 
+      public void resetTouch()
+      {
+        _currentLineObj = null;
+        _currentLine = null;
+        _count = 0;
+      }
+
       public void CleanConnections()
       {
         _connectors.ReleaseGameObjectList();
         _currentLineObj = null;
         _currentLine = null;
         _count = 0;
+        foreach(GameObject g in objects)
+        {
+          Destroy(g);
+        }
+        objects.Clear();
       }
 
       IEnumerator fadeOutUI()
