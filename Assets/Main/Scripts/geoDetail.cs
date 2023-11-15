@@ -15,6 +15,8 @@ using Google.XR.ARCoreExtensions.Samples.Geospatial;
 using NinevaStudios.GoogleMaps;
 using NinevaStudios.GoogleMaps.Internal;
 
+using TMPro;
+
 public class geoDetail : MonoBehaviour
 {
 
@@ -27,22 +29,11 @@ public class geoDetail : MonoBehaviour
   public List<GameObject> objects = new List<GameObject>();
   public Material[] materials;
   lookAt look;
+  int counter;
 
     void Start()
     {
-      if(_armanager == null)
-      {
-        _armanager = new AREarthManager();
-      }
-      if(_anchors == null)
-      {
-        _anchors = new ARAnchorManager();
-      }
-      var earthTrackingState = _armanager.EarthTrackingState;
-      if (earthTrackingState == TrackingState.Tracking)
-      {
-         var cameraGeospatialPose = _armanager.CameraGeospatialPose;
-      }
+
     }
 
     public void clearAll()
@@ -51,8 +42,8 @@ public class geoDetail : MonoBehaviour
         {
             Destroy(anchor);
         }
-
         objects.Clear();
+        counter = 1;
      }
 
      public void setAnchorLatLng(LatLng ll, int catindex)
@@ -60,33 +51,8 @@ public class geoDetail : MonoBehaviour
        setAnchorDouble(ll.Latitude, ll.Longitude, catindex);
      }
 
-    public void setAnchor(string lat, string lng)
-      {
-        float latitude = 0;
-        float longitude = 0;
-
-        float.TryParse(lat, out latitude);
-        float.TryParse(lng, out longitude);
-
-  #if !UNITY_EDITOR
-        var earthTrackingState = _armanager.EarthTrackingState;
-        if (earthTrackingState == TrackingState.Tracking)
-        {
-          Quaternion quaternion = Quaternion.identity;
-          var anchor = _anchors.ResolveAnchorOnTerrain(latitude, longitude, 0, quaternion);
-          var anchoredAsset = Instantiate(GeospatialAssetPrefab, anchor.transform);
-          objects.Add(anchoredAsset);
-        }
-  #endif
-  #if UNITY_EDITOR
-        var anchoredAsset = Instantiate(GeospatialAssetPrefab, transform);
-        objects.Add(anchoredAsset);
-  #endif
-      }
-
       public void setAnchorDouble(double latitude, double longitude, int catindex)
         {
-          Debug.Log("setAnchorDouble");
     #if !UNITY_EDITOR
           var earthTrackingState = _armanager.EarthTrackingState;
           if (earthTrackingState == TrackingState.Tracking)
@@ -94,7 +60,6 @@ public class geoDetail : MonoBehaviour
             Quaternion quaternion = Quaternion.identity;
             var anchor = _anchors.ResolveAnchorOnTerrain(latitude, longitude, 0, quaternion);
             var anchoredAsset = Instantiate(GeospatialAssetPrefab, anchor.transform);
-            anchoredAsset.transform.GetChild(0).GetChild(0).GetChild(0).gameObject.GetComponent<Renderer>().material = materials[catindex];
             objects.Add(anchoredAsset);
           }
     #endif
@@ -123,6 +88,7 @@ public class geoDetail : MonoBehaviour
               look.thePlayer = anchoredAsset.transform;
             }
             look = anchoredAsset.transform.GetChild(0).GetComponent<lookAt>();
+            anchoredAsset.transform.GetChild(1).GetChild(0).gameObject.GetComponent<TMP_Text>().text = counter.ToString();
           }
 #endif
 #if UNITY_EDITOR
@@ -134,6 +100,8 @@ public class geoDetail : MonoBehaviour
             look.thePlayer = anchoredAsset.transform;
           }
           look = anchoredAsset.transform.GetChild(0).GetComponent<lookAt>();
+          anchoredAsset.transform.GetChild(1).GetChild(0).gameObject.GetComponent<TMP_Text>().text = counter.ToString();
 #endif
+          counter += 1;
         }
 }

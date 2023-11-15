@@ -59,40 +59,6 @@ public class travelAPI : MonoBehaviour
 
 	public TMP_Text catText;
 
-	public struct userAttributes {}
-	public struct appAttributes {}
-
-/*
-	async Task Start()
-	{
-			if (Utilities.CheckForInternetConnection())
-			{
-					await InitializeRemoteConfigAsync();
-			}
-
-			RemoteConfigService.Instance.FetchCompleted += ApplyRemoteSettings;
-			RemoteConfigService.Instance.FetchConfigs(new userAttributes(), new appAttributes());
-	}
-
-	async Task InitializeRemoteConfigAsync()
-	{
-					// initialize handlers for unity game services
-					await UnityServices.InitializeAsync();
-
-					// remote config requires authentication for managing environment information
-					if (!AuthenticationService.Instance.IsSignedIn)
-					{
-							await AuthenticationService.Instance.SignInAnonymouslyAsync();
-					}
-	}
-
-	void ApplyRemoteSettings(ConfigResponse configResponse)
-	{
-			api = RemoteConfigService.Instance.appConfig.GetString("geoapify");
-			Debug.Log(api);
-	}
-*/
-
 		void Awake()
     {
 			_drop.options.Clear ();
@@ -197,23 +163,10 @@ public class travelAPI : MonoBehaviour
             double lat = (double)geometry["coordinates"][1];
             double lon = (double)geometry["coordinates"][0];
 
-			if(debugging == true)
-			{
-				Debug.Log("Country: " + country);
-				Debug.Log("City: " + city);
-				Debug.Log("Latitude: " + lat);
-				Debug.Log("Longitude: " + lon);
-			}
-#if !UNITY_EDITOR
-			if(createObjects == true)
-			{
-				geodetail.setAnchor(lat.ToString(), lon.ToString());
-			}
-#endif
-			latitudesList.Add(lat);
-			longitudesList.Add(lon);
-			nameList.Add(name);
-			yield return new WaitForEndOfFrame();
+						latitudesList.Add(lat);
+						longitudesList.Add(lon);
+						nameList.Add(name);
+						yield return new WaitForEndOfFrame();
 
       }
 

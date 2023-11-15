@@ -22,7 +22,6 @@ public class directionsPOI : MonoBehaviour
 	public geoDetail geo;
 	public getDistance distance;
 	public travelAPI details;
-	private Stopwatch stopwatch;
 
 	public GameObject loadingUI;
 
@@ -108,7 +107,6 @@ public class directionsPOI : MonoBehaviour
 
 	IEnumerator checkPOIs()
 	{
-
 #if !UNITY_EDITOR
 		google.OnClearMapClick();
 		geo.clearAll();
@@ -123,14 +121,7 @@ public class directionsPOI : MonoBehaviour
 
 		details.radius = total.ToString();
 
-		UnityEngine.Debug.Log("start");
-    stopwatch = Stopwatch.StartNew();
-
 		yield return StartCoroutine(GetDirections(latfrom, lonfrom, latto, lonto));
-
-		stopwatch.Stop();
-    long elapsedTime = stopwatch.ElapsedMilliseconds;
-    UnityEngine.Debug.Log("GetDirections completed in " + elapsedTime + " milliseconds.");
 
 		yield return new WaitForEndOfFrame();
 
@@ -139,17 +130,7 @@ public class directionsPOI : MonoBehaviour
 
 		yield return new WaitForEndOfFrame();
 
-		stopwatch = Stopwatch.StartNew();
-
 		yield return details.GetDetails(false);
-
-		stopwatch.Stop();
-    elapsedTime = stopwatch.ElapsedMilliseconds;
-    UnityEngine.Debug.Log("GetDetails completed in " + elapsedTime + " milliseconds.");
-
-		yield return new WaitForEndOfFrame();
-
-		stopwatch = Stopwatch.StartNew();
 
 		yield return new WaitForEndOfFrame();
 
@@ -179,7 +160,6 @@ public class directionsPOI : MonoBehaviour
 
 					if(d < POIDistanceLimit)
 					{
-						//UnityEngine.Debug.Log(d);
 						if(d < mindist)
 						{
 							mindist = d;
@@ -195,8 +175,6 @@ public class directionsPOI : MonoBehaviour
 				}
 				yield return new WaitForEndOfFrame();
       }
-
-		//UnityEngine.Debug.Log(p.POI);
 
 		if(poiList.Count != 0)
 		{
@@ -215,7 +193,6 @@ public class directionsPOI : MonoBehaviour
 				google.setPOI(ll, details.catindex);
 #endif
 			}
-			//UnityEngine.Debug.Log("closest" + poiList[poiPoint].POI + " " + poiList[poiPoint].routePoint + " " + poiList[poiPoint].distance);
 		}
 		else
 		{
@@ -238,19 +215,7 @@ public class directionsPOI : MonoBehaviour
 	{
 		loadingUI.SetActive(true);
 
-		long elapsedTime = stopwatch.ElapsedMilliseconds;
-
-		stopwatch = Stopwatch.StartNew();
-
 		yield return details.GetDetails(false);
-
-		stopwatch.Stop();
-		elapsedTime = stopwatch.ElapsedMilliseconds;
-		UnityEngine.Debug.Log("GetDetails completed in " + elapsedTime + " milliseconds.");
-
-		yield return new WaitForEndOfFrame();
-
-		stopwatch = Stopwatch.StartNew();
 
 		yield return new WaitForEndOfFrame();
 
@@ -280,7 +245,6 @@ public class directionsPOI : MonoBehaviour
 
 					if(d < POIDistanceLimit)
 					{
-						//UnityEngine.Debug.Log(d);
 						if(d < mindist)
 						{
 							mindist = d;
@@ -296,8 +260,6 @@ public class directionsPOI : MonoBehaviour
 				}
 				yield return new WaitForEndOfFrame();
 			}
-
-		//UnityEngine.Debug.Log(p.POI);
 
 		if(poiList.Count != 0)
 		{
@@ -316,7 +278,6 @@ public class directionsPOI : MonoBehaviour
 				google.setPOI(ll, details.catindex);
 	#endif
 			}
-			//UnityEngine.Debug.Log("closest" + poiList[poiPoint].POI + " " + poiList[poiPoint].routePoint + " " + poiList[poiPoint].distance);
 		}
 		else
 		{
@@ -351,7 +312,7 @@ public class directionsPOI : MonoBehaviour
             currentInterval += intervalDistance;
         }
 
-		for (int i = 0; i < interpolatedLatitudes.Count; i++)
+				for (int i = 0; i < interpolatedLatitudes.Count; i++)
         {
             UnityEngine.Debug.Log("Interpolated GPS Point: (" + interpolatedLatitudes[i] + ", " + interpolatedLongitudes[i] + ")");
         }
@@ -426,11 +387,6 @@ public class directionsPOI : MonoBehaviour
         }
 				else
 				{
-            //stepsList.Clear();
-            //latList.Clear();
-            //lonList.Clear();
-            //pointsList.Clear();
-
 						UnityEngine.Debug.Log(www.downloadHandler.text);
 
 						GoogleMapsResponse response = JsonUtility.FromJson<GoogleMapsResponse>(www.downloadHandler.text);
@@ -540,63 +496,6 @@ public class directionsPOI : MonoBehaviour
         return poly;
    }
 
-	List<LatLng> Decode(string encodedPoints)
-	{
-			if (string.IsNullOrEmpty(encodedPoints))
-					throw new ArgumentNullException("encodedPoints");
-
-					List<LatLng> poly = new List<LatLng>();
-
-			char[] polylineChars = encodedPoints.ToCharArray();
-			int index = 0;
-
-			int currentLat = 0;
-			int currentLng = 0;
-			int next5bits;
-			int sum;
-			int shifter;
-
-			while (index < polylineChars.Length)
-			{
-					// calculate next latitude
-					sum = 0;
-					shifter = 0;
-					do
-					{
-							next5bits = (int)polylineChars[index++] - 63;
-							sum |= (next5bits & 31) << shifter;
-							shifter += 5;
-					} while (next5bits >= 32 && index < polylineChars.Length);
-
-					if (index >= polylineChars.Length)
-							break;
-
-					currentLat += (sum & 1) == 1 ? ~(sum >> 1) : (sum >> 1);
-
-					//calculate next longitude
-					sum = 0;
-					shifter = 0;
-					do
-					{
-							next5bits = (int)polylineChars[index++] - 63;
-							sum |= (next5bits & 31) << shifter;
-							shifter += 5;
-					} while (next5bits >= 32 && index < polylineChars.Length);
-
-					if (index >= polylineChars.Length && next5bits >= 32)
-							break;
-
-					currentLng += (sum & 1) == 1 ? ~(sum >> 1) : (sum >> 1);
-
-					LatLng p = new LatLng(Convert.ToDouble(currentLat) / 1E5,Convert.ToDouble(currentLng) / 1E5);
-
-					poly.Add(p);
-			}
-
-			return poly;
-
-	}
-
 	public List<LatLng> ExtractAllLatLngSteps(string json)
 	{
 			GoogleMapsResponse response = JsonUtility.FromJson<GoogleMapsResponse>(json);
@@ -693,11 +592,11 @@ public class directionsPOI : MonoBehaviour
 		 yield return new WaitForEndOfFrame();
 		 while(alph > 0)
 		 {
-		 alph = spin.a;
-		 alph -= 0.003f;
-		 spin.a = alph;
-		 resultText.color = spin;
-		 yield return new WaitForEndOfFrame();
+			 alph = spin.a;
+			 alph -= 0.003f;
+			 spin.a = alph;
+			 resultText.color = spin;
+			 yield return new WaitForEndOfFrame();
 		 }
 		 yield return new WaitForEndOfFrame();
 		 resultText.gameObject.SetActive(false);
