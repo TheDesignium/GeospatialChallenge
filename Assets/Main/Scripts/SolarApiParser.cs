@@ -37,7 +37,6 @@ public class SolarApiParser : MonoBehaviour
 
     public GameObject loading;
     public GameObject noData;
-
     public GameObject tap;
 	  public GameObject visuals;
 	  public GameObject sun;
@@ -157,20 +156,14 @@ public class SolarApiParser : MonoBehaviour
         else
         {
             Debug.LogWarning("Data not parsed or incomplete!");
+            loading.SetActive(false);
             geo.setTap();
-            StartCoroutine(nodataLoop());
+            noData.SetActive(true);
+            tap.SetActive(true);
         }
     }
 
-    IEnumerator nodataLoop()
-    {
-        noData.SetActive(true);
-        yield return new WaitForSeconds(3);
-        noData.SetActive(false);
-    }
-
-
-    void Update()
+	void Update()
 	{
 		/*
 		if(setUp == true)
@@ -279,6 +272,8 @@ public class SolarApiParser : MonoBehaviour
     {
       loading.SetActive(true);
       tap.SetActive(false);
+      noData.SetActive(false);
+
       if(hidden == false)
       {
         hidden = true;
