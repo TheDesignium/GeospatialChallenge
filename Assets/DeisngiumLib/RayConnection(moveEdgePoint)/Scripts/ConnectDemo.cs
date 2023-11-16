@@ -16,9 +16,10 @@ namespace Deisgnium.RayConnection
 
       public GameObject[] objectToSpawn;
       public GameObject debugObject;
+      public GameObject taptoplace;
 
-      // draw connection
-      public int _nodeMaxNums = 2;
+        // draw connection
+        public int _nodeMaxNums = 2;
       public int maxObjects = 20;
       public float distanceLimit;
       [SerializeField]
@@ -129,6 +130,8 @@ namespace Deisgnium.RayConnection
 
                         if (hit.collider != null)
                         {
+                            taptoplace.SetActive(false);
+
                             float angle = Vector3.Angle(hit.normal, Vector3.up);
 
                             if (angle < angleThreshold)
