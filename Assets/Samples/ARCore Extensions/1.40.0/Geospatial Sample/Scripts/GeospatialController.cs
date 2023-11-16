@@ -36,6 +36,8 @@ using TMPro;
       public double debuglat = 35.62550337538253;
       public double debuglon = 139.71955919057592;
 
+        public GameObject tapButton;
+
         [Header("AR Components")]
 
         /// <summary>
@@ -244,6 +246,8 @@ using TMPro;
         private List<GameObject> _anchorObjects = new List<GameObject>();
         private IEnumerator _startLocationService = null;
         private IEnumerator _asyncCheck = null;
+
+        public bool canTap;
 
         void Start()
         {
@@ -525,34 +529,20 @@ using TMPro;
                 if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began
                     && !EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId))
                 {
-                    // Set anchor on screen tap.
-                    PlaceAnchorByScreenTap(Input.GetTouch(0).position);
+                    if(canTap == true && Input.GetTouch(0).position.y > 300)
+                    {
+                        // Set anchor on screen tap.
+                        PlaceAnchorByScreenTap(Input.GetTouch(0).position);
+                    }
                 }
 
             }
+        }
 
-            if (earthTrackingState == TrackingState.Tracking)
-            {
-                InfoText.text = string.Format(
-                "Latitude/Longitude: {1}°, {2}°{0}" +
-                "Horizontal Accuracy: {3}m{0}" +
-                "Altitude: {4}m{0}" +
-                "Vertical Accuracy: {5}m{0}" +
-                "Eun Rotation: {6}{0}" +
-                "Orientation Yaw Accuracy: {7}°",
-                Environment.NewLine,
-                pose.Latitude.ToString("F6"),
-                pose.Longitude.ToString("F6"),
-                pose.HorizontalAccuracy.ToString("F6"),
-                pose.Altitude.ToString("F2"),
-                pose.VerticalAccuracy.ToString("F2"),
-                pose.EunRotation.ToString("F1"),
-                pose.OrientationYawAccuracy.ToString("F1"));
-            }
-            else
-            {
-                InfoText.text = "GEOSPATIAL POSE: not tracking";
-            }
+        public void setTap()
+        {
+            canTap = true;
+            tapButton.SetActive(false);
         }
 
         /// <summary>
@@ -765,6 +755,8 @@ using TMPro;
                             debugTarget.position = hitResults[0].pose.position;
                             debugTarget.rotation = hitResults[0].pose.rotation;
 
+                            canTap = false;
+                            tapButton.SetActive(true);
                         }
                     }
                     else
@@ -776,6 +768,9 @@ using TMPro;
 
                             debugTarget.position = hitResults[0].pose.position;
                             debugTarget.rotation = hitResults[0].pose.rotation;
+
+                            canTap = false;
+                            tapButton.SetActive(true);
                     }
                 }
 
