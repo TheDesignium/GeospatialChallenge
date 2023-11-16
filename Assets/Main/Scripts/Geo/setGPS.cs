@@ -548,7 +548,7 @@ public class setGPS : MonoBehaviour
                Debug.Log("Added " + newll);
 			         //some graphics to represent bonus
                rewardText.text = code;
-               int rando = UnityEngine.Random.Range(0,5);
+               int rando = UnityEngine.Random.Range(0,10);
                if(rando == 0)
                {
                  text2speech.remoteRequest("You got another reward");

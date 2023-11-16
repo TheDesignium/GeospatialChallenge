@@ -1090,6 +1090,8 @@ using GoogleTextToSpeech.Scripts.Example;
 		 Debug.Log("start distanceLoop");
 		 string diststring = "0m";
 		 int count = 0;
+            int distcount = 1;
+            float distLimit = 100;
 
         while(true)
         {
@@ -1122,7 +1124,7 @@ using GoogleTextToSpeech.Scripts.Example;
 
 		   Debug.Log(diststring);
 
-          if(diffdistance > 100)
+          if(diffdistance > (distLimit * distcount))
           {
             lastDistance = dist;
 
@@ -1142,6 +1144,7 @@ using GoogleTextToSpeech.Scripts.Example;
 
               text2speech.remoteRequest(message);
             }
+            distcount += 1;
           }
           distanceTxt.text = diststring;
 		  count += 1;
