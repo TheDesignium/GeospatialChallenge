@@ -2,13 +2,17 @@ using System;
 using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+
 using UnityEngine;
+
 using TMPro;
+
+using Google.XR.ARCoreExtensions.Samples.Geospatial;
 
 public class SolarApiParser : MonoBehaviour
 {
 
-    //public GoogleMapsDemo google;
+    public GeospatialController geo;
 
     public TMP_Text debugTxt;
 
@@ -71,7 +75,7 @@ public class SolarApiParser : MonoBehaviour
         //google.OnClearMapClick();
         bboxList.Clear();
 
-        if (data != null && data.solarPotential != null)
+        if (data != null && data.solarPotential != null && data.solarPotential.maxArrayPanelsCount > 0)
         {
             Debug.Log($"Max Array Panels Count: {data.solarPotential.maxArrayPanelsCount}");
             debugTxt.text = data.solarPotential.maxArrayPanelsCount.ToString();
@@ -133,24 +137,25 @@ public class SolarApiParser : MonoBehaviour
                 //google.setAreaPlusCodes(completeBox.NE.x,completeBox.NE.y, completeBox.SW.x,completeBox.SW.y);
             }
 
-			areaInSquareMeters = data.solarPotential.maxArrayAreaMeters2;
-			numberOfObjects = data.solarPotential.maxArrayPanelsCount;
+      			areaInSquareMeters = data.solarPotential.maxArrayAreaMeters2;
+      			numberOfObjects = data.solarPotential.maxArrayPanelsCount;
 
-			float sideLength = Mathf.Sqrt(data.solarPotential.maxArrayAreaMeters2);
-      float halfLength = sideLength/2;
+      			float sideLength = Mathf.Sqrt(data.solarPotential.maxArrayAreaMeters2);
+            float halfLength = sideLength/2;
 
-			targetPositionA = new Vector3(-halfLength,0,sideLength);
-			targetPositionB = new Vector3(-halfLength,0,0);
-			targetPositionC = new Vector3(halfLength,0,0);
-      targetPositionD = new Vector3(halfLength,0,sideLength);
+      			targetPositionA = new Vector3(-halfLength,0,sideLength);
+      			targetPositionB = new Vector3(-halfLength,0,0);
+      			targetPositionC = new Vector3(halfLength,0,0);
+            targetPositionD = new Vector3(halfLength,0,sideLength);
 
-			StartCoroutine(setUpLoop(sideLength * 0.9f));
+      			StartCoroutine(setUpLoop(sideLength * 0.9f));
 
-			setUp = true;
+      			setUp = true;
         }
         else
         {
             Debug.LogWarning("Data not parsed or incomplete!");
+            geo.setTap();
         }
     }
 
