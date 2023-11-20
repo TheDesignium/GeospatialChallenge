@@ -26,7 +26,7 @@ public class travelAPI : MonoBehaviour
 	public geoDetail geodetail;
 	public directionsPOI pois;
 
-	public string api = "5f52cc5c950a4742ae898d164399200e";
+	public string api;
 	public string baseURL = "https://api.geoapify.com/v2/places?categories=";
 	public string catagory = "amenity.toilet";
 	public string condition = "none";
@@ -82,6 +82,16 @@ public class travelAPI : MonoBehaviour
 
     }
 
+		void Start()
+		{
+			Debug.Log(api);
+		}
+
+		public void setAPI(string s)
+		{
+			api = s;
+			Debug.Log(api);
+		}
 
     void Update()
     {

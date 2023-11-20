@@ -4701,7 +4701,7 @@ MonoBehaviour:
   lonfrom: 139.719564754588
   latto: 35.603296464503
   lonto: 139.713274012576
-  api: AIzaSyC9j3st7-6Bi7MCeNUp8K8Gs6kXrzhXCfg
+  api: 
   latF: 35.625683
   lonF: 139.71956
   latT: 35.6033
@@ -7451,7 +7451,7 @@ MonoBehaviour:
   geo: {fileID: 384014293}
   geodetail: {fileID: 1619348189}
   pois: {fileID: 839879559}
-  api: 5f52cc5c950a4742ae898d164399200e
+  api: 
   baseURL: https://api.geoapify.com/v2/places?categories=
   catagory: commercial.convenience
   condition: none
