@@ -11,8 +11,8 @@ public class ApiKeyBuildProcessor : IPreprocessBuildWithReport
 {
     public int callbackOrder { get { return 0; } }
 
-    directionsPOI geo;
-    travelAPI travel;
+    public directionsPOI geo;
+    public travelAPI travel;
 
     public void OnPreprocessBuild(BuildReport report)
     {
@@ -40,6 +40,9 @@ public class ApiKeyBuildProcessor : IPreprocessBuildWithReport
         {
             geo.setAPI(apiKey);
             travel.setAPI(geoKey);
+
+            geo.api = apiKey;
+            travel.api = geoKey;
 
             Debug.Log(apiKey + " & " + geoKey);
         }
