@@ -47,7 +47,7 @@ public class SquareAPI : MonoBehaviour
     private const string linkGiftCardEndpoint = "/v2/gift-cards/";
     private const string createGiftCardActivityEndpoint = "/v2/gift-cards/activities";
 
-    public string accessToken = "EAAAEJ79YmaI12YpZaINn9PBAsuBUDOMdfAXdW8V7W6Dgj3SgmqGyzTDTDA63FF2"; // You'll need your Square access token.
+    public string accessToken = "EAAAEJ79YmaI12YpZaINn9PBAsuBUDOMdfAXdW8V7W6Dgj3SgmqGyzTDTDA63FF2";
 
     public string debugname;
     public string debugID;
@@ -71,6 +71,7 @@ public class SquareAPI : MonoBehaviour
 
 		public bool pluscodes;
     public bool _cleanStart;
+		public bool debugMode;
 
     void Start()
     {
@@ -110,34 +111,7 @@ public class SquareAPI : MonoBehaviour
 
     void Update()
     {
-      if(Input.GetKeyUp(KeyCode.M))
-      {
-        rewardObject.SetActive(true);
-      }
-      if(Input.GetKeyUp(KeyCode.N))
-      {
-				rewardObject.SetActive(false);
-      }
-      if(Input.GetKeyUp(KeyCode.B))
-      {
-        StartCoroutine(CreateGiftCard());
-      }
-      if(Input.GetKeyUp(KeyCode.V))
-      {
-        StartCoroutine(ActivateGiftCard("7783320001143692", "gftc:373e3fb6c7954afd8c4822f9a09ff156"));
-      }
-      if(Input.GetKeyUp(KeyCode.C))
-      {
-        StartCoroutine(GetGiftCard(debugcard));
-      }
-      if(Input.GetKeyUp(KeyCode.X))
-      {
-        StartCoroutine(setUpLoop());
-      }
-      if(Input.GetKeyUp(KeyCode.Z))
-      {
-        StartCoroutine(LoadUpGiftCard(10));
-      }
+
     }
 
 	IEnumerator setUpVisited()
@@ -164,7 +138,7 @@ public class SquareAPI : MonoBehaviour
     IEnumerator setUpLoop()
     {
 			Debug.Log("starting Square set up");
-		loadingObject.SetActive(true);
+			loadingObject.SetActive(true);
 
 #if !UNITY_EDITOR
 		while(mapObject.activeSelf == false)
@@ -181,7 +155,6 @@ public class SquareAPI : MonoBehaviour
       if(File.Exists(path))
       {
 				Debug.Log("save file found");
-
         string str = ReadFileContent(path);
         userInfo = str.Split(",").ToList();
         customername = userInfo[0];
@@ -195,12 +168,26 @@ public class SquareAPI : MonoBehaviour
       {
 				Debug.Log("no save file found, create new customer");
         customername = GenerateRandomStringBasedOnDateTime();
-        yield return CreateCustomer(customername);
+				if(debugMode == false)
+				{
+					yield return CreateCustomer(customername);
+				}
       }
 
-      yield return RetrieveCustomer(customerID);
+			if(debugMode == false)
+			{
+				yield return RetrieveCustomer(customerID);
+			}
 
       yield return new WaitForEndOfFrame();
+
+			if(debugMode == true)
+			{
+				customerID = GenerateRandomStringBasedOnDateTime();
+				customercard = GenerateRandomStringBasedOnDateTime();
+				cardGAN = GenerateRandomStringBasedOnDateTime();
+				cardBalance = 0;
+			}
 
       WriteToFile(customername + "," + customerID + "," + customercard + "," + cardGAN + "," + cardBalance.ToString(), path);
 
@@ -209,7 +196,6 @@ public class SquareAPI : MonoBehaviour
 	  	loadingObject.SetActive(false);
 
 			rewardTextmain.text = "¥" + cardBalance.ToString();
-
 			usernameText.text = "Username: " + customername;
 			userIDText.text = "User ID: " + customerID;
 			userCardText.text = "Gift Card ID: " + customercard;
@@ -464,7 +450,7 @@ public class SquareAPI : MonoBehaviour
 
 	public void addBonus(int amount)
 	{
-		StartCoroutine(LoadUpGiftCard(amount));
+			StartCoroutine(LoadUpGiftCard(amount));
 
 		if(pluscodes == true)
 		{
@@ -484,59 +470,72 @@ public class SquareAPI : MonoBehaviour
 
     private IEnumerator PostGiftCardActivityLoad(string URL, string id, string gan, int bonus)
     {
-        PostRequestBodyLoad body = new PostRequestBodyLoad
-        {
-            gift_card_activity = new LoadGiftCardActivity
-            {
-                location_id = "LWW58KBXJSKY1",
-                type = "LOAD",
-                gift_card_gan = gan,
-                load_activity_details = new LoadActivityDetails
-                {
-                    amount_money = new Money { currency = "GBP", amount = bonus },
-                    buyer_payment_instrument_ids = new string[] { GenerateRandomStringBasedOnDateTime() }
-                },
-                gift_card_id = id
-            },
-            idempotency_key = Guid.NewGuid().ToString()
-        };
+			if(debugMode == false)
+			{
+				PostRequestBodyLoad body = new PostRequestBodyLoad
+				{
+						gift_card_activity = new LoadGiftCardActivity
+						{
+								location_id = "LWW58KBXJSKY1",
+								type = "LOAD",
+								gift_card_gan = gan,
+								load_activity_details = new LoadActivityDetails
+								{
+										amount_money = new Money { currency = "GBP", amount = bonus },
+										buyer_payment_instrument_ids = new string[] { GenerateRandomStringBasedOnDateTime() }
+								},
+								gift_card_id = id
+						},
+						idempotency_key = Guid.NewGuid().ToString()
+				};
 
-        string json = JsonUtility.ToJson(body);
+				string json = JsonUtility.ToJson(body);
 
-        using (UnityWebRequest www = new UnityWebRequest(URL, "POST"))
-        {
-            byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);
-            www.uploadHandler = new UploadHandlerRaw(bodyRaw);
-            www.downloadHandler = new DownloadHandlerBuffer();
+				using (UnityWebRequest www = new UnityWebRequest(URL, "POST"))
+				{
+						byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);
+						www.uploadHandler = new UploadHandlerRaw(bodyRaw);
+						www.downloadHandler = new DownloadHandlerBuffer();
 
-            www.SetRequestHeader("Square-Version", "2023-08-16");
-            www.SetRequestHeader("Authorization", "Bearer " + accessToken);
-            www.SetRequestHeader("Content-Type", "application/json");
+						www.SetRequestHeader("Square-Version", "2023-08-16");
+						www.SetRequestHeader("Authorization", "Bearer " + accessToken);
+						www.SetRequestHeader("Content-Type", "application/json");
 
-            yield return www.SendWebRequest();
+						yield return www.SendWebRequest();
 
-            if (www.result != UnityWebRequest.Result.Success)
-            {
-                Debug.Log(www.error);
-            }
-            else
-            {
-                Debug.Log("Response: " + www.downloadHandler.text);
-                UniqueGiftCardActivityResponse parsedResponse = JsonUtility.FromJson<UniqueGiftCardActivityResponse>(www.downloadHandler.text);
-                cardBalance = parsedResponse.gift_card_activity.gift_card_balance_money.amount;
-                string currency = parsedResponse.gift_card_activity.gift_card_balance_money.currency;
+						if (www.result != UnityWebRequest.Result.Success)
+						{
+								Debug.Log(www.error);
+						}
+						else
+						{
+								Debug.Log("Response: " + www.downloadHandler.text);
+								UniqueGiftCardActivityResponse parsedResponse = JsonUtility.FromJson<UniqueGiftCardActivityResponse>(www.downloadHandler.text);
+								cardBalance = parsedResponse.gift_card_activity.gift_card_balance_money.amount;
+								string currency = parsedResponse.gift_card_activity.gift_card_balance_money.currency;
 
-                Debug.Log($"Card Balance: {cardBalance} {currency}");
-                WriteToFile(customername + "," + customerID + "," + customercard + "," + cardGAN + "," + cardBalance.ToString(), path);
+								Debug.Log($"Card Balance: {cardBalance} {currency}");
+								WriteToFile(customername + "," + customerID + "," + customercard + "," + cardGAN + "," + cardBalance.ToString(), path);
 								StartCoroutine(fadeOutText(cardBalance.ToString()));
 								rewardTextmain.text = "¥" + cardBalance.ToString();
 
 								int totalGain = cardBalance - startcardBalance;
 								rewardTextearnings.text = "¥" + totalGain.ToString();
 								userBalanceText.text = "Gift Card Balance: ¥" + cardBalance;
-
 						}
-        }
+				}
+			}
+			else
+			{
+				cardBalance += 2;
+				WriteToFile(customername + "," + customerID + "," + customercard + "," + cardGAN + "," + cardBalance.ToString(), path);
+				StartCoroutine(fadeOutText(cardBalance.ToString()));
+				rewardTextmain.text = "¥" + cardBalance.ToString();
+
+				int totalGain = cardBalance - startcardBalance;
+				rewardTextearnings.text = "¥" + totalGain.ToString();
+				userBalanceText.text = "Gift Card Balance: ¥" + cardBalance;
+			}
     }
 
     [System.Serializable]

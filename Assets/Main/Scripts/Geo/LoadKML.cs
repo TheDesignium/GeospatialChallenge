@@ -25,7 +25,6 @@ public class LoadKML : MonoBehaviour {
 
     public string kmlFilePath; // Path to the KML file
     public string kmlFileName;
-    public string api;
 
     public string[] coordinateStrings;
     public List<string> coordinates = new List<string>();

@@ -54,12 +54,9 @@ using GoogleTextToSpeech.Scripts.Example;
         [Header("AR Components")]
 		public GameObject loadingObject;
 
-        public bool debugging;
         public bool checkPosition;
         public bool texttospeech;
 
-    	public Image debugimg;
-    	public Gradient gradient;
     	public TMP_Text debugTxt;
         public TMP_Text distanceTxt;
         public getDistance distance;
@@ -272,10 +269,6 @@ using GoogleTextToSpeech.Scripts.Example;
                 return;
             }
 
-            if(debugging == true)
-      			{
-      				UpdateDebugInfo();
-      			}
             // Check session error status.
             LifecycleUpdate();
             if (_isReturning)
@@ -908,42 +901,6 @@ using GoogleTextToSpeech.Scripts.Example;
         private void QuitApplication()
         {
             Application.Quit();
-        }
-
-        private void UpdateDebugInfo()
-        {
-            if (!Debug.isDebugBuild || EarthManager == null)
-            {
-                return;
-            }
-
-            var pose = EarthManager.EarthState == EarthState.Enabled &&
-                EarthManager.EarthTrackingState == TrackingState.Tracking ?
-                EarthManager.CameraGeospatialPose : new GeospatialPose();
-            var supported = EarthManager.IsGeospatialModeSupported(GeospatialMode.Enabled);
-            DebugText.text =
-                $"IsReturning: {_isReturning}\n" +
-                $"IsLocalizing: {_isLocalizing}\n" +
-                $"SessionState: {ARSession.state}\n" +
-                $"LocationServiceStatus: {Input.location.status}\n" +
-                $"FeatureSupported: {supported}\n" +
-                $"EarthState: {EarthManager.EarthState}\n" +
-                $"EarthTrackingState: {EarthManager.EarthTrackingState}\n" +
-                $"  LAT/LNG: {pose.Latitude:F6}, {pose.Longitude:F6}\n" +
-                $"  HorizontalAcc: {pose.HorizontalAccuracy:F6}\n" +
-                $"  ALT: {pose.Altitude:F2}\n" +
-                $"  VerticalAcc: {pose.VerticalAccuracy:F2}\n" +
-                $". EunRotation: {pose.EunRotation:F2}\n" +
-                $"  OrientationYawAcc: {pose.OrientationYawAccuracy:F2}";
-
-                double f = (pose.VerticalAccuracy + pose.OrientationYawAccuracy + pose.HorizontalAccuracy)/3f;
-                debugimg.color = ColorFromGradient((float)f/10f);
-
-        }
-
-        Color ColorFromGradient (float value)  // float between 0-1
-        {
-          return gradient.Evaluate(value);
         }
 
         private string GetDisplayStringForAnchorPlacedSuccess()

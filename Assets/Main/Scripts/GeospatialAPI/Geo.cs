@@ -21,11 +21,6 @@ public class Geo : MonoBehaviour
 {
     public AREarthManager _armanager;
     public ARAnchorManager _anchors;
-    public GeospatialController geoControl;
-  	public setGPS gps;
-
-    EarthState EarthState;
-    TrackingState EarthTrackingState;
 
     public GameObject GeospatialAssetPrefab;
 	   public GameObject GeospatialAssetPrefabVisited;
@@ -39,59 +34,7 @@ public class Geo : MonoBehaviour
 
     public void nowStart()
     {
-      if(_armanager == null)
-      {
-        _armanager = new AREarthManager();
-      }
-      if(_anchors == null)
-      {
-        _anchors = new ARAnchorManager();
-      }
-      var earthTrackingState = _armanager.EarthTrackingState;
-      if (earthTrackingState == TrackingState.Tracking)
-      {
-         var cameraGeospatialPose = _armanager.CameraGeospatialPose;
-      }
-    }
 
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
-    public void checkPosition()
-    {
-      var _a = _armanager.IsGeospatialModeSupported(GeospatialMode.Enabled);
-
-      Debug.Log(_a);
-
-      var _b = _armanager.EarthState;
-
-      Debug.Log(_b);
-
-      var _c = _armanager.CameraGeospatialPose;
-
-      Debug.Log(_c);
-
-      var earthTrackingState = _armanager.EarthTrackingState;
-
-      Debug.Log(earthTrackingState);
-
-      if (earthTrackingState == TrackingState.Tracking)
-      {
-         // Values obtained by the Geospatial API are valid as long as
-         // earthTrackingState is TrackingState.Tracking.
-         // Use Geospatial APIs in this block.
-         var cameraGeospatialPose = _armanager.CameraGeospatialPose;
-         Debug.Log("Altitude: " + cameraGeospatialPose.Altitude);
-         Debug.Log("Heading: " + cameraGeospatialPose.Heading);
-         Debug.Log("HeadingAccuracy: " + cameraGeospatialPose.HeadingAccuracy);
-         Debug.Log("HorizontalAccuracy: " + cameraGeospatialPose.HorizontalAccuracy);
-         Debug.Log("Latitude: " + cameraGeospatialPose.Latitude);
-         Debug.Log("Longitude: " + cameraGeospatialPose.Longitude);
-         Debug.Log("VerticalAccuracy: " + cameraGeospatialPose.VerticalAccuracy);
-      }
     }
 
     public void startLocation()
@@ -139,17 +82,6 @@ public class Geo : MonoBehaviour
               lon = Input.location.lastData.longitude;
               Debug.Log("Location: " + lat + ":" + lon);
           }
-    }
-
-    public void parseSetAnchor(string _s)
-    {
-      string output = _s.Split('(', ')')[1];
-      string lat = output.Remove(output.LastIndexOf(','));
-      string lon = output.Substring(output.LastIndexOf(',') + 1);
-      float _la = 0;
-      float _lo = 0;
-      float.TryParse(lat, out _la);
-      float.TryParse(lon, out _lo);
     }
 
     public void clearAnchors()

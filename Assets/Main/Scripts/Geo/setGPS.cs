@@ -50,7 +50,6 @@ public class setGPS : MonoBehaviour
 
   	public double gridDistance;
 
-  	public Texture2D loadedTexture;
 
   	public TMP_Text plusCodeTxt;
     public TMP_Text detailTxt;
@@ -58,11 +57,7 @@ public class setGPS : MonoBehaviour
 
     public Material debugMaterial;
 
-    public Image SVimage;
     public GameObject plusdebug;
-
-	public Animator ani;
-	public bool codeOut;
 
     void Start()
     {
@@ -81,71 +76,6 @@ public class setGPS : MonoBehaviour
   		{
         getPlusCodeVisited(lat,lon);
   		}
-    }
-
-    IEnumerator streetTest()
-    {
-      string baseurl = "https://maps.googleapis.com/maps/api/streetview?size=400x400&location=";
-      string svurl = baseurl + "35.62561524780179,139.71949746616224" + "&fov=80&heading=" + heading + "&pitch=0&key=" + api; //&signature=YOUR_SIGNATURE
-
-      UnityWebRequest www = UnityWebRequest.Get(svurl);
-      yield return www.SendWebRequest();
-
-      if (www.result != UnityWebRequest.Result.Success)
-      {
-          Debug.Log(www.error);
-      }
-      else
-      {
-          // Show results as text
-          string str = www.downloadHandler.text;
-          Debug.Log(str);
-      }
-
-      using (UnityWebRequest uwr = UnityWebRequestTexture.GetTexture(svurl))
-      {
-        yield return uwr.SendWebRequest();
-
-        if (uwr.result != UnityWebRequest.Result.Success)
-        {
-            Debug.Log(uwr.error);
-        }
-        else
-        {
-            // Get downloaded asset bundle
-            var texture = DownloadHandlerTexture.GetContent(uwr);
-            debugMaterial.mainTexture = texture;
-        }
-      }
-    }
-
-    IEnumerator GetText() {
-
-		UnityWebRequest www = UnityWebRequest.Get("https://maps.googleapis.com/maps/api/elevation/json?locations=35.695242,139.624534&key=AIzaSyCLoCRs3w-AGrm7_AwCjrCq9W9gNQLOC6c");
-
-    yield return www.SendWebRequest();
-
-        if (www.isNetworkError) {
-            Debug.Log(www.error);
-        } else {
-            // Show results as text
-            Debug.Log(www.downloadHandler.text);
-        }
-    }
-
-	IEnumerator LoadTextureFromWeb(string url)
-    {
-        UnityWebRequest www = UnityWebRequestTexture.GetTexture(url);
-        yield return www.SendWebRequest();
-
-        if (www.isNetworkError || www.isHttpError)
-        {
-            Debug.LogError("Error: " + www.error);
-        }
-        else
-        {
-            loadedTexture = DownloadHandlerTexture.GetContent(www);
-        }
     }
 
     public IEnumerator GetLocation()
@@ -198,8 +128,6 @@ public class setGPS : MonoBehaviour
       				_google.setbyGPS(latf, lonf);
       			}
 
-            _geo.nowStart();
-
             yield return new WaitForEndOfFrame();
 
       			if(enableMinimap == true)
@@ -207,12 +135,6 @@ public class setGPS : MonoBehaviour
       				_google.gameObject.SetActive(true);
       			}
         }
-    }
-
-    public void changeType(int _i)
-    {
-      _google.OnClearMapClick();
-      _geo.clearAnchors();
     }
 
     public void checkPlusCode()
@@ -354,136 +276,6 @@ public class setGPS : MonoBehaviour
         }
     }
 
-   public void googleGeocode()
-   {
-     StartCoroutine(GetGeocode());
-   }
-
-   IEnumerator GetGeocode()
-   {
-
-   var debuglat = lat;
-   var debuglon = lon;
-
-#if !UNITY_EDITOR
-   var ll = _gc.returnLatLon();
-   debuglat = ll[0];
-   debuglon = ll[1];
-#endif
-
-    yield return new WaitForEndOfFrame();
-
-    UnityWebRequest www = UnityWebRequest.Get("https://maps.googleapis.com/maps/api/geocode/json?address=" + debuglat + "," + debuglon + "&language=ja-JP" + "&key=AIzaSyCLoCRs3w-AGrm7_AwCjrCq9W9gNQLOC6c");
-
-       yield return www.SendWebRequest();
-
-       if (www.isNetworkError)
-      {
-           Debug.Log(www.error);
-       }
-    else
-    {
-             // Show results as text
-        Debug.Log(www.downloadHandler.text);
-        geocodeList.Clear();
-        addressList.Clear();
-        geocodeList = www.downloadHandler.text.Split('\n').ToList();
-
-        foreach(string s in geocodeList)
-        {
-          if(s.Contains("formatted_address"))
-          {
-            addressList.Add(s);
-          }
-        }
-
-        geocodeList.Clear();
-        geocodeList = addressList[0].Split('\"').ToList();
-        Debug.Log(geocodeList[3]);
-       }
-   }
-
-
-   public void getPlusCodeTap(string codelat, string codelon)
-   {
-	   StartCoroutine(GetPlusCodeManual(codelat,codelon));
-   }
-
-    IEnumerator GetPlusCodeManual(string codelat, string codelon)
-    {
-
-        UnityWebRequest www = UnityWebRequest.Get("https://plus.codes/api?address=" + codelat + "," + codelon + "&ekey=" + api + "&email=" + "matt@designium.jp");
-
-        yield return www.SendWebRequest();
-
-        if (www.isNetworkError)
-        {
-            Debug.Log(www.error);
-        }
-        else
-        {
-
-          pluscodeList.Clear();
-          pluscodeList = www.downloadHandler.text.Split('\n').ToList();
-
-          string code = pluscodeList[2];
-          code = code.Replace("\"", "");
-          code = code.Replace("global_code:", "");
-          code = code.Replace(",", "");
-          code = code.Replace(" ", "");
-  	      Debug.Log(code);
-          //    "global_code": "8Q7XJPG9+6V",
-
-          string nelat = cleanPlusCode(pluscodeList[6]);
-          string nelon = cleanPlusCode(pluscodeList[7]);
-          string swlat = cleanPlusCode(pluscodeList[10]);
-          string swlon = cleanPlusCode(pluscodeList[11]);
-          string loclat = cleanPlusCode(pluscodeList[15]);
-          string loclon = cleanPlusCode(pluscodeList[16]);
-
-          float nelatf = 0; float nelonf = 0; float swlatf = 0; float swlonf = 0; float loclatf = 0; float loclonf = 0;
-
-          Debug.Log(loclat.ToString() + "," + loclon.ToString());
-
-          float.TryParse(nelat, out nelatf);
-          float.TryParse(nelon, out nelonf);
-          float.TryParse(swlat, out swlatf);
-          float.TryParse(swlon, out swlonf);
-          float.TryParse(loclat, out loclatf);
-          float.TryParse(loclon, out loclonf);
-#if !UNITY_EDITOR
-          _google.setAreaPlusCodes(nelatf,nelonf,swlatf,swlonf,loclatf,loclonf);
-#endif
-          heading = UnityEngine.Random.Range(0,360).ToString();
-          string baseurl = "https://maps.googleapis.com/maps/api/streetview?size=400x400&location=";
-          string svurl = baseurl + loclat + "," + loclonf + "&fov=80&heading=" + heading + "&pitch=0&key=" + api; //&signature=YOUR_SIGNATURE
-
-          using (UnityWebRequest uwr = UnityWebRequestTexture.GetTexture(svurl))
-          {
-            yield return uwr.SendWebRequest();
-
-            if (uwr.result != UnityWebRequest.Result.Success)
-            {
-                Debug.Log(uwr.error);
-            }
-            else
-            {
-                // Get downloaded asset bundle
-                var texture = DownloadHandlerTexture.GetContent(uwr);
-                debugMaterial.mainTexture = texture;
-                Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.zero);
-                // Set sprite to Image component
-                SVimage.sprite = sprite;
-            }
-          }
-
-          plusCodeTxt.text = code;
-          detailTxt.text = loclat.ToString() + ", " + loclonf.ToString();
-          plusdebug.SetActive(true);
-		  codeOut = true;
-    		}
-      }
-
       public void getPlusCodeVisited(string codelat, string codelon)
       {
         StartCoroutine(GetPlusCodeVisited(codelat,codelon));
@@ -578,19 +370,5 @@ public class setGPS : MonoBehaviour
            }
          }
 
-		 public void codeIn()
-		 {
-			 StartCoroutine(setCodeIn());
-		 }
 
-		 IEnumerator setCodeIn()
-		 {
-			 if(codeOut == true)
-			 {
-				 codeOut = false;
-				ani.Play("in",0,0);
-			 }
-			 yield return new WaitForSeconds(1);
-			 plusdebug.SetActive(false);
-		 }
 }

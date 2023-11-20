@@ -23,7 +23,6 @@ public class GoogleMapsDemo : MonoBehaviour
 	public LoadKML kml;
 	public Animator ani;
 
-	public bool plusCodes;
 	public bool setOverlay;
 	public bool autoHide;
 
@@ -543,11 +542,6 @@ public class GoogleMapsDemo : MonoBehaviour
 		_map.SetOnMapClickListener(point =>
 		{
 			Debug.Log("Map clicked: " + point);
-			if(plusCodes == true)
-			{
-				//_gps.getPlusCodeTap(point.Latitude.ToString(), point.Longitude.ToString());
-				//screenShot();
-			}
 		});
 		_map.SetOnLongMapClickListener(point =>
 		{
@@ -1391,7 +1385,6 @@ public class GoogleMapsDemo : MonoBehaviour
 			_map.IsVisible = false;
 		}
 		ani.Play("hidemapBottom",0,0);
-		_gps.codeIn();
 		StopCoroutine("fadeOutPanel");
 		StartCoroutine("fadeOutPanel");
 	}
