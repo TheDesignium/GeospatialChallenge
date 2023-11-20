@@ -2146,7 +2146,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   solar: {fileID: 1310376428}
-  solarKey: AIzaSyCBtleFO8Df5yvDj1kvnJAsrokNY7aWyyw
+  solarKey: 
   debugTarget: {fileID: 1764473405}
   locationTxt: {fileID: 593959152}
   debuglat: 35.62550337538253
