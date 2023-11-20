@@ -4701,7 +4701,7 @@ MonoBehaviour:
   lonfrom: 139.719564754588
   latto: 35.603296464503
   lonto: 139.713274012576
-  api: AIzaSyCcJaKJPSikG9jCumvS4DiqLeBHIWjwXY8
+  api: AIzaSyC9j3st7-6Bi7MCeNUp8K8Gs6kXrzhXCfg
   latF: 35.625683
   lonF: 139.71956
   latT: 35.6033
@@ -7466,7 +7466,6 @@ MonoBehaviour:
   _cond: {fileID: 1613670249}
   resetButton: {fileID: 1146069691}
   useLocation: 0
-  debugging: 0
   hasChecked: 0
   haveCheckedList: 
   nameList: []
