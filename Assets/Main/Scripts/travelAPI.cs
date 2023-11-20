@@ -84,7 +84,7 @@ public class travelAPI : MonoBehaviour
 
 		void Start()
 		{
-			Debug.Log(api);
+
 		}
 
 		public void setAPI(string s)

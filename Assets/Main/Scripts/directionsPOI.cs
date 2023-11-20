@@ -69,8 +69,6 @@ public class directionsPOI : MonoBehaviour
 			{
 				StartCoroutine(GetLocation(false));
 			}
-
-			UnityEngine.Debug.Log(api);
     }
 
 		public void setAPI(string s)
