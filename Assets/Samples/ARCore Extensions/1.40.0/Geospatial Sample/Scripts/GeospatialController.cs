@@ -255,6 +255,11 @@ using TMPro;
           OnGeometryToggled(true);
         }
 
+        public void setAPI(string s)
+        {
+          solarKey = s;
+        }
+
         public void OnGetStartedClicked()
         {
             PlayerPrefs.SetInt(_hasDisplayedPrivacyPromptKey, 1);
