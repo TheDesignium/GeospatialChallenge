@@ -58,7 +58,6 @@ public class directionsPOI : MonoBehaviour
 	public int poiPoint;
 
 	public bool miniMap;
-	public bool ARNavigation;
 
 	public TMP_Text resultText;
 	public TMP_Text statusText;
@@ -432,10 +431,6 @@ public class directionsPOI : MonoBehaviour
                 {
 									CalculateInterpolatedGPSPointsDoubles(previousLL.Latitude, previousLL.Longitude, latlngList[counter].Latitude, latlngList[counter].Longitude);
    								previousLL = latlngList[counter];
-									if(ARNavigation == true)
-									{
-										geo.setAnchorNavi((float)previousLL.Latitude,(float)previousLL.Longitude);
-									}
                 }
                 else
                 {

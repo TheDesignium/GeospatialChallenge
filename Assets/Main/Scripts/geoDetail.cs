@@ -25,7 +25,6 @@ public class geoDetail : MonoBehaviour
   EarthState EarthState;
   TrackingState EarthTrackingState;
   public GameObject GeospatialAssetPrefab;
-  public GameObject GeospatialNaviPrefab;
   public List<GameObject> objects = new List<GameObject>();
   public Material[] materials;
   lookAt look;
@@ -72,37 +71,4 @@ public class geoDetail : MonoBehaviour
         }
 
 
-        public void setAnchorNavi(float latitude, float longitude)
-        {
-#if !UNITY_EDITOR
-          var earthTrackingState = _armanager.EarthTrackingState;
-
-          if (earthTrackingState == TrackingState.Tracking)
-          {
-            Quaternion quaternion = Quaternion.identity;
-
-            var anchor = _anchors.ResolveAnchorOnTerrain(latitude, longitude, 0, quaternion);
-            var anchoredAsset = Instantiate(GeospatialNaviPrefab, anchor.transform);
-            objects.Add(anchoredAsset);
-            if(look != null)
-            {
-              look.thePlayer = anchoredAsset.transform;
-            }
-            look = anchoredAsset.transform.GetChild(0).GetComponent<lookAt>();
-            anchoredAsset.transform.GetChild(1).GetChild(0).gameObject.GetComponent<TMP_Text>().text = counter.ToString();
-          }
-#endif
-#if UNITY_EDITOR
-          Vector3 v3 = new Vector3(Random.Range(-20,20),0,Random.Range(10,40));
-          var anchoredAsset = Instantiate(GeospatialNaviPrefab, v3, Quaternion.identity);
-          objects.Add(anchoredAsset);
-          if(look != null)
-          {
-            look.thePlayer = anchoredAsset.transform;
-          }
-          look = anchoredAsset.transform.GetChild(0).GetComponent<lookAt>();
-          anchoredAsset.transform.GetChild(1).GetChild(0).gameObject.GetComponent<TMP_Text>().text = counter.ToString();
-#endif
-          counter += 1;
-        }
 }
