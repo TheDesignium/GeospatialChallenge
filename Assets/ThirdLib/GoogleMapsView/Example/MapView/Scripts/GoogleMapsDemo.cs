@@ -248,7 +248,6 @@ public class GoogleMapsDemo : MonoBehaviour
 
 	public void setRouteStrings(List<string> latlngList)
 	{
-		Debug.Log("set route");
 		float templat = 0;
 		float templon = 0;
 		List<LatLng> lllist = new List<LatLng>();
@@ -263,9 +262,6 @@ public class GoogleMapsDemo : MonoBehaviour
 		}
 
 		var polyline = _map.AddPolyline(CreateRoutePolylineOptions(lllist));
-		//const int zoom = 16;
-		//AnimateCamera(CameraUpdate.NewLatLngZoom(lllist[0], zoom));
-		//Debug.Log(_map.getBounds());
 	}
 
 	public void setZoomStrings(string zoomlatlng)
@@ -306,7 +302,6 @@ public class GoogleMapsDemo : MonoBehaviour
 
 	public void addMapPin(float latf, float lonf)
     {
-		Debug.Log("place map icon");
 		LatLng point = new LatLng(latf, lonf);
 		_map.AddMarker(DemoUtils.RandomColorMarkerOptions(point));
 	}
@@ -393,13 +388,11 @@ public class GoogleMapsDemo : MonoBehaviour
 
 	void onTouch(string marker)
 	{
-		Debug.Log(marker);
 		movingMap = true;
 		idleMap = false;
 	}
 	void onTouchIdle(string marker)
 	{
-		Debug.Log(marker);
 		idleMap = true;
 	}
 
@@ -592,7 +585,6 @@ public class GoogleMapsDemo : MonoBehaviour
 
 		_marker.Remove();
 		_marker = null;
-		Debug.Log("Marker was removed.");
 	}
 
 	[UsedImplicitly]
@@ -1214,13 +1206,10 @@ public class GoogleMapsDemo : MonoBehaviour
 
 	IEnumerator fadeInPanel()
 	{
-		Debug.Log("fadeInPanel");
-
 		var spin = panelColour;
 		float alph = 0;
 		spin.a = alph;
 		snapshotImage.color = spin;
-		//frameImage.color = spin;
 		yield return new WaitForEndOfFrame();
 		snapshotImage.gameObject.SetActive(true);
 		frameImage.gameObject.SetActive(true);
@@ -1230,7 +1219,6 @@ public class GoogleMapsDemo : MonoBehaviour
 			alph += 0.03f;
 			spin.a = alph;
 			snapshotImage.color = spin;
-			//frameImage.color = spin;
 			yield return new WaitForEndOfFrame();
 		}
 		yield return new WaitForEndOfFrame();
@@ -1239,25 +1227,19 @@ public class GoogleMapsDemo : MonoBehaviour
 
 	IEnumerator fadeOutPanel()
 	{
-		Debug.Log("fadeOutPanel");
-
 		var spin = panelColour;
 		float alph = 1;
 		spin.a = alph;
 		snapshotImage.color = spin;
-		//frameImage.color = spin;
 		yield return new WaitForEndOfFrame();
 		snapshotImage.gameObject.SetActive(true);
 		while(alph > 0)
 		{
 			alph = spin.a;
 			alph -= 0.03f;
-			//alph -= 0.001f;
 
 			spin.a = alph;
 			snapshotImage.color = spin;
-			//frameImage.color = spin;
-			Debug.Log(alph);
 
 			yield return new WaitForEndOfFrame();
 		}
