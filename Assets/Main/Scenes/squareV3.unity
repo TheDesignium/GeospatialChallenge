@@ -10822,7 +10822,7 @@ MonoBehaviour:
   baseUrl: https://connect.squareupsandbox.com
   customerEndpoint: /v2/customers
   giftCardEndpoint: /v2/gift-cards
-  accessToken: EAAAEJ79YmaI12YpZaINn9PBAsuBUDOMdfAXdW8V7W6Dgj3SgmqGyzTDTDA63FF2
+  accessToken: 
   debugname: 
   debugID: 
   debugcard: gftc:3618bfa66c9140dda285ad592de66999
@@ -10839,7 +10839,7 @@ MonoBehaviour:
   visitedpath: 
   pluscodes: 1
   _cleanStart: 0
-  debugMode: 1
+  debugMode: 0
 --- !u!4 &1000348968
 Transform:
   m_ObjectHideFlags: 0

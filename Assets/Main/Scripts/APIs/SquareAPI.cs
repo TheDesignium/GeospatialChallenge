@@ -47,7 +47,7 @@ public class SquareAPI : MonoBehaviour
     private const string linkGiftCardEndpoint = "/v2/gift-cards/";
     private const string createGiftCardActivityEndpoint = "/v2/gift-cards/activities";
 
-    public string accessToken = "EAAAEJ79YmaI12YpZaINn9PBAsuBUDOMdfAXdW8V7W6Dgj3SgmqGyzTDTDA63FF2";
+    public string accessToken = "";
 
     public string debugname;
     public string debugID;
