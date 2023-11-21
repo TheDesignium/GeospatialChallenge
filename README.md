@@ -13,6 +13,7 @@ Tapping on a horizontal surface will place a standard decoration and tapping on 
 ### Installing
 
 There is a working APK [HERE](https://drive.google.com/file/d/1HTjnYwqluq2lnT-ahW6gBev8oW0q5j5k/view?usp=sharing)
+After granting the initial permissions you may need to close restart the app. 
 
 The APK was built with a custom keystore so the ARCore Extensions API key will only work with the built APK above. 
 
