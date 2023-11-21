@@ -10211,7 +10211,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d57d2de368ff21d4e8126fbcc2e4176c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  apiKey: AIzaSyC9j3st7-6Bi7MCeNUp8K8Gs6kXrzhXCfg
+  apiKey: 
 --- !u!4 &803232310
 Transform:
   m_ObjectHideFlags: 0
@@ -16278,7 +16278,7 @@ MonoBehaviour:
   lat: 35.62575567757443
   lon: 139.72133366122006
   radius: 500
-  api: AIzaSyC9j3st7-6Bi7MCeNUp8K8Gs6kXrzhXCfg
+  api: 
   heading: 0
   enableMinimap: 1
   pluscodeList: []
@@ -52890,4 +52890,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d57d2de368ff21d4e8126fbcc2e4176c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  apiKey: AIzaSyC9j3st7-6Bi7MCeNUp8K8Gs6kXrzhXCfg
+  apiKey: 
